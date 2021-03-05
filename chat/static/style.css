@@ -2,3 +2,14 @@
   max-width: 50px;
   border-radius: 50%;
 }
+
+.flex-box {
+  display: flex;
+  float: right;
+}
+
+.top {
+  width: 200px;
+  border-color: white;
+  padding: .25rem
+}

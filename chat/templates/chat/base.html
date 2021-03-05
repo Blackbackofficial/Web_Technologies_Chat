@@ -15,7 +15,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container col-md-5">
-        <a class="navbar-brand" href="{% url 'index' %}">Questionnaire</a>
+        <a class="navbar-brand" href="{% url 'index' %}">Stack Overflow</a>
     </div>
 
     <div class="container">
@@ -26,9 +26,18 @@
     </div>
 
     <div class="container avatar-container col-md-4">
-        <div class="col-2 ml-auto">
-            <img class="avatar" src={% static "avatar.png" %} alt="">
+
+        {% if user.is_authenticated %}
+        <div class="col-2 mr-4 ml-auto">
+            <img class="avatar" src={{ avatar }} alt="">
         </div>
+
+        {% else %}
+        <div class="col-2 mr-4 ml-auto">
+            <img class="avatar" src={% static "images/avatar.png" %} alt="">
+        </div>
+        {% endif %}
+
         <div class="row">
             {% if user.is_authenticated %}
                 <a href="#">{{user.username}}</a>
@@ -41,7 +50,7 @@
             <div class="row">
                 {% if user.is_authenticated %}
                     <div class="col col-np">
-                        <a href="{%url 'settings'%}">settigs</a>
+{#                        <a href="{%url 'settings'%}">settigs</a>#}
                     </div>
 
                     <div class="col col-np">
