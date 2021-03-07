@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import UserProfile
+from .models import UserProfile, Question
 
 
 class LoginForm(forms.ModelForm):
@@ -27,3 +27,13 @@ class UserRegistrationForm(forms.Form):
     class Meta:
         model = UserProfile
         fields = ('username', 'email', 'avatar')
+
+
+class AskForm(forms.Form):
+    title = forms.CharField(label='Титул', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    text = forms.CharField(label='Текст', widget=forms.Textarea(attrs={'class': 'form-control'}))
+    tags = forms.CharField(label='Теги', widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    class Meta:
+        model = Question
+        fields = ('title', 'tags')
