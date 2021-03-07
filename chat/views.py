@@ -131,6 +131,41 @@ def ask_quest(request):
     return render(request, 'chat/newquestion.html', {'form': form, 'avatar': avatar(request)})
 
 
+def settings(request):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            first_name = request.POST.get("first_name")
+            last_name = request.POST.get("last_name")
+            username = request.POST.get("username")
+            email = request.POST.get("email")
+            password1 = request.POST.get("password")
+            password2 = request.POST.get("password2")
+            if password1 != password2:
+                return JsonResponse({'status': 'error',
+                                     'message': 'Отсутсвует обязательный параметр',
+                                     'fields': ['password', 'password2']})
+            request.user.username = username
+            request.user.set_password(password1)
+            request.user.email = email
+            request.user.first_name = first_name
+            request.user.last_name = last_name
+            request.user.save()
+            user = auth.authenticate(username=username, password=password1)
+            if user is not None:
+                auth.login(request, user)
+            return HttpResponseRedirect('/?continue=saveset')
+        # auto filed
+        user_data = User.objects.get(id=request.user.id)
+        first_name = user_data.first_name
+        last_name = user_data.last_name
+        username = user_data.username
+        email = user_data.email
+        form = UserRegistrationForm({'first_name': first_name, 'last_name': last_name, 'username': username,
+                                     'email': email})
+        return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request)})
+    return HttpResponseRedirect('/?continue=notlogin')
+
+
 # static
 def avatar(request):
     ava = None

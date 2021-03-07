@@ -1,0 +1,42 @@
+{% extends "chat/base.html" %}
+{% load static %}
+
+{% block title %}
+    Вопрос
+{% endblock %}
+
+{% block content %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th style="width: 200px; border-color: white;" colspan="3">
+                <h3 style="text-align: center">Настройки</h3>
+            </th>
+        </tr>
+        </thead>
+        <tbody style="background-color: white; padding: 20px;">
+        <tr>
+            <td>
+                <div style="margin: 10px;">
+                    <form class="form-horizontal" method="post">
+                        {% csrf_token %}
+                        <fieldset>
+                            {% for field in form %}
+                                <div>
+                                    <label class="label">{{ field.label }}</label>
+                                    <div>{{ field }}</div>
+                                </div>
+                            {% endfor %}
+                        </fieldset>
+                        <div class="form-actions"><br/>
+                            <button type="submit" class="btn btn-primary">
+                                Сохранить настройки
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            <td>
+        </tr>
+        </tbody>
+    </table>
+{% endblock %}
