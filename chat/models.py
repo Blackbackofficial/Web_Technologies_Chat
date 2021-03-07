@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from chat.managers import UserManager
+from chat.managers import UserManager, QuestionManager, TagManager
 
 
 class UserProfile(models.Model):
@@ -17,3 +17,32 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = u'пользователь'
         verbose_name_plural = u'пользователи'
+
+
+class Question(models.Model):
+    title = models.CharField(max_length=255, verbose_name="заголовок")
+    text = models.TextField(verbose_name="текст")
+    author = models.ForeignKey(User, verbose_name="автор", on_delete=models.DO_NOTHING)
+    tags = models.ManyToManyField("Tag")
+    rating_num = models.IntegerField(verbose_name='рейтинг', default=0)
+    added_on = models.DateTimeField(verbose_name='дата и время добавления', auto_now_add=True)
+    objects = QuestionManager()
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'вопрос'
+        verbose_name_plural = 'вопросы'
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=255, verbose_name="имя")
+    objects = TagManager()
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'тег'
+        verbose_name_plural = 'теги'

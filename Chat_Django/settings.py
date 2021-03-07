@@ -129,7 +129,8 @@ USE_TZ = True
 
 STATICFILES_DIRS = '../static/'
 STATIC_URL = '/static/'
-STATIC_ROOT = '/static/'
 
 ROOT_PATH = os.path.dirname(__file__)
 STATICFILES_DIRS = [os.path.join(ROOT_PATH, 'static')]
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'chat/')

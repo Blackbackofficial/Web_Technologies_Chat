@@ -3,21 +3,17 @@ import re
 from django.contrib.auth.models import User
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.db import IntegrityError
-from .forms import LoginForm, UserRegistrationForm
+from .forms import LoginForm, UserRegistrationForm, AskForm
 from django.contrib import auth
-from .models import UserProfile
+from .models import UserProfile, Question, Tag
 
 
 def index(request):
-    avatar = None
-    if request.user.is_authenticated:
-        avatar = UserProfile.objects.get(user_id=request.user.id).avatar.url
-        avatar = avatar.replace("/chat/", "")
     return render(request, 'chat/index.html', {
-        'avatar': avatar,
+        'avatar': avatar(request),
         'title': 'Главная страница'})
 
 
@@ -112,3 +108,33 @@ def registration(request):
             error_fields.append("Неизвестная ошибка")
     form = UserRegistrationForm()
     return render(request, 'chat/registration.html', {'form': form, 'errors': error_fields})
+
+
+def ask_quest(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Ошибка доступа'})
+    if request.method == "POST":
+        title = request.POST.get("title")
+        text = request.POST.get("text")
+        tags = request.POST.get("tags")
+
+        qst = Question.objects.create(title=title,
+                                      text=text,
+                                      author=request.user)
+        tags = tags.split(",")
+        for tag in tags:
+            tag = (str(tag)).replace(' ', '')
+            Tag.objects.add_qst(tag, qst)
+        qst.save()
+        return HttpResponseRedirect('/?page=1000000000')
+    form = AskForm()
+    return render(request, 'chat/newquestion.html', {'form': form, 'avatar': avatar(request)})
+
+
+# static
+def avatar(request):
+    ava = None
+    if request.user.is_authenticated:
+        ava = UserProfile.objects.get(user_id=request.user.id).avatar.url
+        ava = ava.replace("/chat", "")
+    return ava
