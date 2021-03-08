@@ -1,5 +1,3 @@
-import re
-
 from django.contrib.auth.models import User
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -9,6 +7,7 @@ from django.db import IntegrityError
 from .forms import LoginForm, UserRegistrationForm, AskForm
 from django.contrib import auth
 from .models import UserProfile, Question, Tag
+import re
 
 
 def index(request):
@@ -54,28 +53,21 @@ def registration(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('/?continue=relog')
     if request.method == "POST":
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        login_user = request.POST.get("username")
-        email = request.POST.get("email")
-        password1 = request.POST.get("password")
-        password2 = request.POST.get("password2")
-        avatar = request.FILES.get("avatar")
-
-        if not first_name or len(first_name) == 0:
-            error_fields.append("first_name")
-        if not last_name or len(last_name) == 0:
+        data = get_data(request)
+        if not data['first_name'] or len(data['first_name']) == 0:
+            error_fields.append(data["first_name"])
+        if not data['last_name'] or len(data['last_name']) == 0:
             error_fields.append("last_name")
-        if not login_user or len(login_user) == 0:
+        if not data['username'] or len(data['username']) == 0:
             error_fields.append("username")
-        if not email or len(email) == 0:
+        if not data['email'] or len(data['email']) == 0:
             error_fields.append("email")
-        if not password1 or len(password1) == 0:
+        if not data['password1'] or len(data['password1']) == 0:
             error_fields.append("password")
-        if not password2 or len(password2) == 0:
+        if not data['password2'] or len(data['password2']) == 0:
             error_fields.append("password2")
 
-        if password1 != password2:
+        if data['password1'] != data['password2']:
             error_fields.append("Пароли не совпадают")
 
         if len(error_fields) > 0:
@@ -83,20 +75,20 @@ def registration(request):
             return render(request, 'chat/registration.html', {'form': form, 'errors': error_fields})
 
         try:
-            validators.validate_email(email)
+            validators.validate_email(data['email'])
         except ValidationError:
             error_fields.append("Неверный формат почты")
 
-        if not re.compile("^([A-Za-z0-9]+)+$").match(login_user):
+        if not re.compile("^([A-Za-z0-9]+)+$").match(data['username']):
             error_fields.append("Неверный формат логина")
         user = None
         try:
-            user = User.objects.create_user(username=login_user, email=email, password=password1)
-            user.first_name = first_name
-            user.last_name = last_name
+            user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password1'])
+            user.first_name = data['first_name']
+            user.last_name = data['last_name']
             user.save()
             user_pk = User.objects.get(id=user.pk)
-            add_avatar = UserProfile(user=user_pk, avatar=avatar)
+            add_avatar = UserProfile(user=user_pk, avatar=data['avatar'])
             add_avatar.save()
         except IntegrityError:
             error_fields.append("Нарушена уникальность вводимых данных")
@@ -134,23 +126,18 @@ def ask_quest(request):
 def settings(request):
     if request.user.is_authenticated:
         if request.method == "POST":
-            first_name = request.POST.get("first_name")
-            last_name = request.POST.get("last_name")
-            username = request.POST.get("username")
-            email = request.POST.get("email")
-            password1 = request.POST.get("password")
-            password2 = request.POST.get("password2")
-            if password1 != password2:
+            data = get_data(request)
+            if data['password1'] != data['password2']:
                 return JsonResponse({'status': 'error',
                                      'message': 'Отсутсвует обязательный параметр',
                                      'fields': ['password', 'password2']})
-            request.user.username = username
-            request.user.set_password(password1)
-            request.user.email = email
-            request.user.first_name = first_name
-            request.user.last_name = last_name
+            request.user.username = data['username']
+            request.user.set_password(data['password1'])
+            request.user.email = data['email']
+            request.user.first_name = data['first_name']
+            request.user.last_name = data['last_name']
             request.user.save()
-            user = auth.authenticate(username=username, password=password1)
+            user = auth.authenticate(username=data['username'], password=data['password1'])
             if user is not None:
                 auth.login(request, user)
             return HttpResponseRedirect('/?continue=saveset')
@@ -173,3 +160,15 @@ def avatar(request):
         ava = UserProfile.objects.get(user_id=request.user.id).avatar.url
         ava = ava.replace("/chat", "")
     return ava
+
+
+def get_data(request):
+    data = dict()
+    data['first_name'] = request.POST.get("first_name")
+    data['last_name'] = request.POST.get("last_name")
+    data['username'] = request.POST.get("username")
+    data['email'] = request.POST.get("email")
+    data['password1'] = request.POST.get("password")
+    data['password2'] = request.POST.get("password2")
+    data['avatar'] = request.FILES.get("avatar")
+    return data
