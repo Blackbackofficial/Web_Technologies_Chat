@@ -2,3 +2,5 @@ venvvenv
 .idea
 Chat_Django/__pycache__
 chat/__pycache__
+__pycache__/
+*.pyc
