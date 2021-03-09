@@ -16,7 +16,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container col-md-5">
-        <a class="navbar-brand" href="{% url 'index' %}">Stack Overflow</a>
+        <a class="navbar-brand" title="Все вопросы" href="{% url 'index' %}">Stack Overflow</a>
     </div>
 
     <div class="container">
@@ -84,10 +84,6 @@
         <div class="col-8 mt-3">
 
             {% block content %}
-            {% endblock %}
-
-            {% block pagination %}
-                {% include "chat/pagination.html" %}
             {% endblock %}
 
         </div>

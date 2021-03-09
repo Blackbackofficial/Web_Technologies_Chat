@@ -1,19 +1,74 @@
 from django.contrib.auth.models import User
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.db import IntegrityError
 from .forms import LoginForm, UserRegistrationForm, AskForm
 from django.contrib import auth
 from .models import UserProfile, Question, Tag
+from django.core.paginator import Paginator, EmptyPage
 import re
 
 
-def index(request):
+def paginate(request, qs, url=None):
+    try:
+        limit = int(request.GET.get('limit', 5))
+    except ValueError:
+        limit = 5
+    if limit > 100:
+        limit = 5
+    try:
+        page = int(request.GET.get('page', 1))
+    except ValueError:
+        raise Http404
+    paginator = Paginator(qs, limit)
+    try:
+        page = paginator.page(page)
+    except EmptyPage:
+        page = paginator.page(paginator.num_pages)
+
+    if url == 'hot':
+        paginator.baseurl = '/hot/?page='
+    elif url == 'new':
+        paginator.baseurl = '/new/?page='
+    else:
+        paginator.baseurl = '/?page='
+    paginator.startdiv = page.number - 2
+    paginator.enddiv = page.number + 2
+    return page
+
+
+def index(request, mod=0):
+    if mod == 1:
+        page = paginate(request, Question.objects.hot(), 'hot')
+        title = 'Популярные'
+        hot = None
+        new = 'Новые'
+    elif mod == 2:
+        page = paginate(request, Question.objects.new(), 'new')
+        title = 'Новые'
+        hot = 'Популярные'
+        new = None
+    else:
+        page = paginate(request, Question.objects.all(), '')
+        title = 'Все вопросы'
+        hot = 'Популярные'
+        new = 'Новые'
+    title_page = title + ':'
     return render(request, 'chat/index.html', {
         'avatar': avatar(request),
-        'title': 'Главная страница'})
+        'title': title, 'title_page': title_page, 'hot': hot, 'new': new,
+        'page': page, 'posts': page.object_list, 'paginator': page.paginator
+    })
+
+
+def questions_hot(request):
+    return index(request, 1)
+
+
+def questions_new(request):
+    return index(request, 2)
 
 
 def login(request):
@@ -92,8 +147,7 @@ def registration(request):
             add_avatar.save()
         except IntegrityError:
             error_fields.append("Нарушена уникальность вводимых данных")
-        except:
-            error_fields.append("Неизвестная ошибка сервера")
+
         if user is not None:
             return HttpResponseRedirect('/?continue=reg')
         else:

@@ -1,18 +1,98 @@
 {% extends 'chat/base.html' %}
-
+{% load static %}
 
 {% block content %}
-<h1>Вывод пользователей:</h1>
-    {% if name != null %}
-        {% for obj in name %} {# это Jinja2 те шаблон #}
-            <div class="alert alert-secondary">
-                <h3>{{ obj.name }}</h3>
-                <h3>{{ obj.age }}</h3>
+    <div class="row col-md-12">
+        <div class="col-md-5">
+            <h2>{{ title_page }}</h2>
+        </div>
+        {% if hot %}
+            <div class="col-md-3 my-1">
+                <a type="button" class="btn btn-outline-secondary" href="{% url 'hot' %}">{{ hot }}</a>
             </div>
-        {% endfor %}
-        {% else %}
-        <p>Нет записей</p>
-    {% endif %}
-<p>Контент главной страницы</p>
+        {% endif %}
+
+        {% if new %}
+        <div class="col-md-3 my-1">
+            <a type="button" class="btn btn-outline-secondary" href="{% url 'new' %}">{{ new }}</a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% for item in posts %}
+        <div class="row question mt-3 mr-3">
+            <div class="container">
+                <div class="row mt-2">
+                    <div class="col-2">
+                        <div class="row">
+                            <img class="avatar mx-auto my-auto" src={% static "avatar.png" %} alt="">
+                        </div>
+                        <!-- WARNING: тут должны быть лайки -->
+                        <div class="row mt-3">
+                            <div class="center-text" style="margin-left: auto;
+                            margin-right: auto; border: 1px solid black; padding: 0em 1.8em;">
+                                {{item.rating}}
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="btn-group mx-auto my-auto">
+                                <button type="button" class="btn btn-secondary">+</button>
+                                <button type="button" class="btn btn-secondary">-</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="row">
+                            <a href="#" class="h4">{{item.title}}</a>
+                        </div>
+
+                        <div class="row">
+                            <p>
+                                {{item.text}}
+                            </p>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                <a href ="#">Answers: {{item.answer}}</a>
+                            </div>
+                            <div class="col">
+                                <span>Tags:</span>
+                                {% for tag in tags%}
+                                    <a href="{% url 'tags'%}">{{item.tags}}</a>
+                                {% empty %}
+                                    <p>Smth</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <div>
+        <ul class="pagination align-content-center">
+            <li class="page-item">
+                <a class="page-link" href="{{ paginator.baseurl }}1"> << </a>
+            </li>
+
+            {% for p in paginator.page_range %}
+                {% if p >= paginator.startdiv %}
+                    {% if p <= paginator.enddiv %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ paginator.baseurl }}{{ p }}">{{ p }}</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+
+            <li class="page-item">
+                <a class="page-link" href="{{ paginator.baseurl }}{{ paginator.num_pages }}"> >> </a>
+            </li>
+        </ul>
+    </div>
 {% endblock %}
 
