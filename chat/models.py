@@ -19,6 +19,14 @@ class UserProfile(models.Model):
         verbose_name_plural = u'пользователи'
 
 
+class Likes(models.Model):
+    id_question = models.IntegerField(verbose_name='id', default=0)
+    id_user = models.IntegerField(verbose_name='id лайкнувшего', default=0)
+
+    def __str__(self):
+        return self.id_question
+
+
 class Question(models.Model):
     title = models.CharField(max_length=30, verbose_name="заголовок")
     text = models.TextField(max_length=255, verbose_name="текст")
