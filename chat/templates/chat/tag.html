@@ -1,0 +1,98 @@
+{% extends "chat/base.html" %}
+{% load static %}
+
+{% block title %}
+    Тег {{ tag }}
+{% endblock %}
+
+{% block content %}
+    <table class="table">
+        <thead class="thead-inverse">
+        <tr>
+            <th style="width: 200px;" colspan="3"> Вопросы по тегу "{{ tag }}" : <a href="#" id="hq">Hot questions</a>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td colspan="4">
+                <div class="thd">
+                    <div class="left" id="changeColor">
+
+                        <figure class="figure">
+                            <img src="{% static 'images/g.png' %}" class="figure-img img-fluid rounded"
+                                 alt="A generic square placeholder image with rounded corners in a figure.">
+                        </figure>
+                        <select class="form-control form-control-sm marks">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                        </select>
+                        <a href="#"><img src="{% static 'images/like.png' %}" id="like"/></a>
+                    </div>
+                    <div class="text">
+                        <p class="Ttl"><a href="#" class="Ttl">This is some text within a card block.</a></p>
+                        <p class="fish">Tut chto-to budet potom</p>
+                    </div>
+                    <div class="propwin">
+                        <a href="#" style="margin-right: 35px;"> ответы(3) </a>
+                        Tags:
+                        <a href="thistag.html"> this </a>,
+                        <a href="#"> and </a>,
+                        <a href="#"> this </a>,
+                        <a href="#"> ... </a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <div class="thd">
+                    <div class="left">
+                        <figure class="figure">
+                            <img src="{% static 'images/g.png' %}" class="figure-img img-fluid rounded"
+                                 alt="A generic square placeholder image with rounded corners in a figure.">
+                        </figure>
+                        <select class="form-control form-control-sm marks">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                        </select>
+                        <a href="#"><img src="{% static 'images/like.png' %}" id="like"/></a>
+                    </div>
+                    <div class="text">
+                        <p class="Ttl"><a href="#" class="Ttl">This is some text within a card block.</a></p>
+                        <p class="fish">Tut chto-to budet potom</p>
+                    </div>
+                    <div class="propwin">
+                        <a href="#" style="margin-right: 35px;"> ответы(3) </a>
+                        Tags:
+                        <a href="#"> this </a>,
+                        <a href="#"> and </a>,
+                        <a href="#"> this </a>,
+                        <a href="#"> ... </a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="btn-toolbar center" role="toolbar" aria-label="Toolbar with button groups">
+                    <div class="btn-group mr-2" role="group" aria-label="First group">
+                        <button type="button" class="btn btn-secondary"> <<</button>
+                    </div>
+                    <div class="btn-group mr-2" role="group" aria-label="Second group">
+                        <button type="button" class="btn btn-secondary">1</button>
+                        <button type="button" class="btn btn-secondary">2</button>
+                        <button type="button" class="btn btn-secondary">3</button>
+                        <button type="button" class="btn btn-secondary">4</button>
+                    </div>
+                    <div class="btn-group mr-2" role="group" aria-label="Third group">
+                        <button type="button" class="btn btn-secondary"> >></button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+{% endblock %}

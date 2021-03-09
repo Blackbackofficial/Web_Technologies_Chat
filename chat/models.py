@@ -20,8 +20,8 @@ class UserProfile(models.Model):
 
 
 class Question(models.Model):
-    title = models.CharField(max_length=255, verbose_name="заголовок")
-    text = models.TextField(verbose_name="текст")
+    title = models.CharField(max_length=30, verbose_name="заголовок")
+    text = models.TextField(max_length=255, verbose_name="текст")
     author = models.ForeignKey(User, verbose_name="автор", on_delete=models.DO_NOTHING)
     tags = models.ManyToManyField("Tag")
     rating_num = models.IntegerField(verbose_name='рейтинг', default=0)
@@ -37,7 +37,7 @@ class Question(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=255, verbose_name="имя")
+    name = models.CharField(max_length=20, verbose_name="имя")
     objects = TagManager()
 
     def __str__(self):
