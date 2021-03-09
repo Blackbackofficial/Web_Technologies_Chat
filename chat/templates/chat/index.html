@@ -30,15 +30,21 @@
                         <!-- WARNING: тут должны быть лайки -->
                         <div class="row mt-3">
                             <div class="center-text" style="margin-left: auto;
-                            margin-right: auto; border: 1px solid black; padding: 0em 1.8em;">
-                                {{item.rating}}
+                            margin-right: auto; padding: 0em 1.8em;">
+                                {{item.rating_num}}
                             </div>
                         </div>
 
                         <div class="row mt-3">
                             <div class="btn-group mx-auto my-auto">
-                                <button type="button" class="btn btn-secondary">+</button>
-                                <button type="button" class="btn btn-secondary">-</button>
+                                {% if user.is_authenticated %}
+                                <button type="button" class="btn btn-secondary likes-button" data-ans="{{ item.id }}">
+                                    <strong id="like_count">+</strong>
+                                </button>
+                                <button type="button" class="btn btn-secondary dismiss-button" data-ans="{{ item.id }}">
+                                    <strong id="dismiss_count">-</strong>
+                                </button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

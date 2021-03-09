@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -6,7 +7,7 @@ from django.shortcuts import render
 from django.db import IntegrityError
 from .forms import LoginForm, UserRegistrationForm, AskForm
 from django.contrib import auth
-from .models import UserProfile, Question, Tag
+from .models import UserProfile, Question, Tag, Likes
 from django.core.paginator import Paginator, EmptyPage
 import re
 
@@ -37,6 +38,25 @@ def paginate(request, qs, url=None):
     paginator.startdiv = page.number - 2
     paginator.enddiv = page.number + 2
     return page
+
+
+def add_like(request):
+    if request.method == 'GET':
+        ans_id = request.GET['answer_id']
+        if check(request, ans_id):
+            questions = Question.objects.get(pk=ans_id)
+            questions.rating_num = questions.rating_num + 1
+            questions.save()
+
+
+def dismiss_like(request):
+    if request.method == 'GET':
+        ans_id = request.GET['answer_id']
+        if check(request, ans_id):
+            questions = Question.objects.get(pk=ans_id)
+            if questions.rating_num > 0:
+                questions.rating_num = questions.rating_num - 1
+                questions.save()
 
 
 def index(request, mod=0):
@@ -163,10 +183,7 @@ def ask_quest(request):
         title = request.POST.get("title")
         text = request.POST.get("text")
         tags = request.POST.get("tags")
-
-        qst = Question.objects.create(title=title,
-                                      text=text,
-                                      author=request.user)
+        qst = Question.objects.create(title=title, text=text, author=request.user)
         tags = tags.split(",")
         for tag in tags:
             tag = (str(tag)).replace(' ', '')
@@ -212,7 +229,6 @@ def avatar(request):
     ava = None
     if request.user.is_authenticated:
         ava = UserProfile.objects.get(user_id=request.user.id).avatar.url
-        ava = ava.replace("/chat", "")
     return ava
 
 
@@ -226,3 +242,14 @@ def get_data(request):
     data['password2'] = request.POST.get("password2")
     data['avatar'] = request.FILES.get("avatar")
     return data
+
+
+def check(request, ans_id):
+    ans_id = request.GET['answer_id']
+    try:
+        Likes.objects.get(id_question=ans_id, id_user=request.user.id)
+        return False
+    except ObjectDoesNotExist:
+        like = Likes(id_question=ans_id, id_user=request.user.id)
+        like.save()
+        return True
