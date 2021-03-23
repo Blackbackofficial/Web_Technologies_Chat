@@ -72,7 +72,7 @@
                                 {% for tag in item.tags.all%}
                                     <a href="{% url 'tag' tag %}" class="question-tag">{{tag}}</a>
                                 {% empty %}
-                                    <p>None</p>
+                                    <span>None</span>
                                 {% endfor %}
                             </div>
                         </div>
