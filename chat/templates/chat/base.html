@@ -14,69 +14,71 @@
     <link rel="stylesheet" href={% static "style.css" %}>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container col-md-5">
-        <a class="navbar-brand" title="Все вопросы" href="{% url 'index' %}">Stack Overflow</a>
-    </div>
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container col-md-5">
+            <a class="navbar-brand" title="Все вопросы" href="{% url 'index' %}">Stack Overflow</a>
+        </div>
 
-    <div class="container">
-        <form class="form-inline my-2 my-lg-0 col">
-            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0 top-cover" type="submit">Search</button>
-        </form>
-    </div>
+        <div class="container">
+            <form class="form-inline my-2 my-lg-0 col">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0 top-cover" type="submit">Search</button>
+            </form>
+        </div>
 
-    <div class="container avatar-container col-md-4">
+        <div class="container avatar-container col-md-4">
 
-        {% if user.is_authenticated %}
-            <div class="nav-item">
-                <a class="nav-link" href="{% url 'ask' %}">Задать вопрос</a>
-            </div>
-
-            <div class="col-2 mr-4 ml-auto">
-                <img class="avatar" src={{ avatar }} alt="">
-            </div>
-
-
-        {% else %}
-            <div class="col-2 mr-4 ml-auto">
-                <img class="avatar" src={% static "images/avatar.png" %} alt="">
-            </div>
-        {% endif %}
-
-        <div class="row">
             {% if user.is_authenticated %}
-                <div class="mr-4">
-                    <b>{{user.username}}</b>
+                <div class="nav-item">
+                    <a class="nav-link" href="{% url 'ask' %}">Задать вопрос</a>
                 </div>
+
+                <div class="col-2 mr-4 ml-auto">
+                    <img class="avatar" src={{ avatar }} alt="">
+                </div>
+
+
             {% else %}
-                <div class="mr-4">
-                    <b>NoName</b>
+                <div class="col-2 mr-4 ml-auto">
+                    <img class="avatar" src={% static "images/avatar.png" %} alt="">
                 </div>
             {% endif %}
 
             <div class="row">
                 {% if user.is_authenticated %}
-                    <div class="col col-np">
-                        <a href="{%url 'settings'%}">Settigs</a>
-                    </div>
-
-                    <div class="col mr-2 col-np">
-                        <a href="{%url 'logout'%}">Logout</a>
+                    <div class="mr-4">
+                        <b>{{user.username}}</b>
                     </div>
                 {% else %}
-                    <div class="col mr-2 col-np">
-                        <a href="{%url 'login'%}">Log in</a>
-                    </div>
-
-                    <div class="col mr-2 col-np">
-                        <a href="{%url 'signup'%}">Register</a>
+                    <div class="mr-4">
+                        <b>NoName</b>
                     </div>
                 {% endif %}
+
+                <div class="row">
+                    {% if user.is_authenticated %}
+                        <div class="col col-np">
+                            <a href="{%url 'settings'%}">Settigs</a>
+                        </div>
+
+                        <div class="col mr-2 col-np">
+                            <a href="{%url 'logout'%}">Logout</a>
+                        </div>
+                    {% else %}
+                        <div class="col mr-2 col-np">
+                            <a href="{%url 'login'%}">Log in</a>
+                        </div>
+
+                        <div class="col mr-2 col-np">
+                            <a href="{%url 'signup'%}">Register</a>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
-</nav>
+    </nav>
+</header>
 
 <div class="container">
     <div class="row">
