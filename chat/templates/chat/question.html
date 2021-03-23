@@ -1,0 +1,133 @@
+{% extends "chat/base.html" %}
+{% load static %}
+
+{% block title %}
+    Вопрос {{ id }}
+{% endblock %}
+
+{% block content %}
+    <div>
+        <div class="thead-inverse">
+        <div>
+            <th style="width: 200px;" colspan="3">Вопрос номер {{ id }}: <a href="#" id="hq">Hot questions</a></th>
+        </div>
+        </div>
+        <div>
+        <div>
+            <div colspan="4" style="background-color: white; max-height: 400px;">
+                <div style="color: #262727" data-id="{{ id }}">
+                    <button class="left" id="changeColor" style="margin-top: 50px"></button>
+
+                        <figure class="figure">
+{#                            <img src="{% static 'images/g.png' %}" class="figure-img img-fluid rounded"#}
+{#                                 alt="A generic square placeholder image with rounded corners in a figure.">#}
+                        </figure>
+                        <p style="background-color: white; font-size: 14px; width: 40px; font-weight:bold; border-radius: 4px; padding-left: 2px; margin-bottom: 1px;"
+                           id="rating228"> {{ question.rating_num }}</p>
+                        <div>
+                            <button type="button" class="btn btn-secondary likes-button"><strong id="like">+</strong></button>
+                            <button type="button" class="btn btn-secondary likes-button"><strong id="dislike">-</strong></button>
+                           </div>
+                    </div>
+                    <div style="float: left; margin:20px; width: 80%;">
+                        <h4 style="text-align:center;">{{ question.title }}</h4>
+                        <hr>
+                        <p> {{ question.text }}</p>
+                        <hr>
+                        Tags:
+{#                        {% for tag in question.tags.all %}#}
+{#                            <a href="{% url 'tag' tag %}" class="question-tag">{{ tag }}</a> ,#}
+{#                        {% endfor %}#}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% for comment in posts %}
+            <div>
+                <div colspan="4">
+                    <div class="thd">
+                        <div class="left">
+                            <figure class="figure">
+                                <img src="{% static 'images/g.png' %}" class="figure-img img-fluid rounded"
+                                     alt="A generic square placeholder image with rounded corners in a figure.">
+                            </figure>
+                            <p style="background-color: white; font-size: 14px; width: 40px; font-weight:bold; border-radius: 4px; padding-left: 2px; margin-bottom: 1px;"> {{ comment.rating_num }}</p>
+                           <div>
+                            <button type="button" class="btn btn-secondary likes-button"><strong id="like">+</strong></button>
+                            <button type="button" class="btn btn-secondary likes-button"><strong id="dislike">-</strong></button>
+                           </div>
+                        </div>
+                        <div class="text">
+                            <p class="fish" style="margin-top: 30px;">{{ comment.content }}
+                                {% if comment.is_correct == False %}
+                                    <form>
+                                        <div class="form-check" style="color:white">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" value="">
+                                                Проверено
+                                            </label>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Отметить</button>
+                                    </form>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        <div>
+        {% if posts %}
+            <ul class="pagination align-content-center">
+                <li class="page-item">
+                    <a class="page-link" href="{{ paginator.baseurl }}1"> << </a>
+                </li>
+
+                {% for p in paginator.page_range %}
+                    {% if p >= paginator.startdiv %}
+                        {% if p <= paginator.enddiv %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ paginator.baseurl }}{{ p }}">{{ p }}</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                <li class="page-item">
+                    <a class="page-link" href="{{ paginator.baseurl }}{{ paginator.num_pages }}"> >> </a>
+                </li>
+            </ul>
+        {% endif %}
+    </div>
+        {% if user_name is not None %}
+            <div>
+                <div style="background-color: white; padding: 20px;">
+                    <div>Ввести свой ответ:</div>
+                    <form class="form-horizontal" method="post">
+                        {% csrf_token %}
+                        <fieldset>
+                            {% for field in form %}
+                                <div class="control_group"
+                                     {% if field.errors %}has-error{% endif %}>
+                                    <label class="control-label">{{ field.label }}</label>
+                                    <div class="controls">{{ field }}</div>
+                                </div>
+                            {% endfor %}
+                        </fieldset>
+                        <div class="form-actions"><br/>
+                            <button type="submit" class="btn btn-primary">
+                                Ответить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        </div>
+    </div>
+
+
+{#    <script src="{% static 'js/jquery-3.2.1.js'%}" type="text/javascript"></script>#}
+    <script src="{% static 'js/ajax.js' %}" type="text/javascript"></script>
+{% endblock %}

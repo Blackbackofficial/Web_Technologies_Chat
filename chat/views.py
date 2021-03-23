@@ -5,9 +5,10 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.db import IntegrityError
-from .forms import LoginForm, UserRegistrationForm, AskForm
+from django.views.decorators.csrf import csrf_exempt
+from .forms import LoginForm, UserRegistrationForm, AskForm, AnswerForm
 from django.contrib import auth
-from .models import UserProfile, Question, Tag, Likes
+from .models import UserProfile, Question, Tag, Likes, Answer
 from django.core.paginator import Paginator, EmptyPage
 import re
 
@@ -40,23 +41,22 @@ def paginate(request, qs, url=None):
     return page
 
 
+@csrf_exempt
 def add_like(request):
-    if request.method == 'GET':
-        ans_id = request.GET['answer_id']
+    if request.method == 'POST':
+        ans_id = request.POST['answer_id']
+        like_dis = request.POST['answer']
         if check(request, ans_id):
             questions = Question.objects.get(pk=ans_id)
-            questions.rating_num = questions.rating_num + 1
-            questions.save()
-
-
-def dismiss_like(request):
-    if request.method == 'GET':
-        ans_id = request.GET['answer_id']
-        if check(request, ans_id):
-            questions = Question.objects.get(pk=ans_id)
-            if questions.rating_num > 0:
-                questions.rating_num = questions.rating_num - 1
+            if like_dis == 'like':
+                questions.rating_num = questions.rating_num + 1
                 questions.save()
+            else:
+                if questions.rating_num > 0:
+                    questions.rating_num = questions.rating_num - 1
+                    questions.save()
+            return JsonResponse({'rating': questions.rating_num})
+        return JsonResponse({'rating': "Answered"})
 
 
 def index(request, mod=0):
@@ -98,6 +98,48 @@ def login(request):
 def signup(request):
     return render(request, 'chat/registration.html')
 
+
+def question(request, quest_num=1):
+    scroll = None
+    if quest_num is None:
+        raise Http404("No questions provided")
+    if request.method == "POST":
+        text = request.POST.get('text')
+        quest = Question.objects.get(id=quest_num)
+        quest.answer = quest.answer + 1
+        quest.save()
+        Answer.objects.create(content=text, question=quest, author=request.user)
+        scroll = True
+    q = Question.objects.get(id=quest_num)
+    form = AnswerForm()
+    page = paginate(request, q.answers.all())
+    user_name = None
+    if request.user.is_authenticated:
+        user_name = request.user.first_name
+    page.paginator.baseurl = '/question/' + str(quest_num) + '/?page='
+    if scroll is None:
+        return render(request, 'chat/onequestion.html', {'posts': page.object_list,
+                                                         'paginator': page.paginator, 'page': page, 'id': quest_num,
+                                                         'question': q, 'form': form, 'user_name': user_name})
+    if scroll:
+        return render(request, 'chat/onequestion.html',
+                      {'posts': page.paginator.page(page.paginator.num_pages).object_list,
+                       'paginator': page.paginator, 'page': page.paginator.page(page.paginator.num_pages),
+                       'id': quest_num,
+                       'question': q, 'form': form, 'user_name': user_name})
+
+
+def questions_tag(request, tag):
+    if tag == None:
+        raise Http404("No tag provided")
+
+    page = paginate(request, Question.objects.by_tag(tag))
+    if page.end_index() == 0:
+        raise Http404("No tag provided")
+
+    page.paginator.baseurl = '/tag/' + tag + '/?page='
+    return render(request, "questions_tag.html", {'posts': page.object_list,
+                                                  'paginator': page.paginator, 'page': page, 'tag': tag})
 
 def make_login(request):
     if request.user.is_authenticated:
@@ -207,6 +249,7 @@ def settings(request):
             request.user.email = data['email']
             request.user.first_name = data['first_name']
             request.user.last_name = data['last_name']
+            # request.user.avatar = data['avatar'] надо доделать
             request.user.save()
             user = auth.authenticate(username=data['username'], password=data['password1'])
             if user is not None:
@@ -245,7 +288,6 @@ def get_data(request):
 
 
 def check(request, ans_id):
-    ans_id = request.GET['answer_id']
     try:
         Likes.objects.get(id_question=ans_id, id_user=request.user.id)
         return False

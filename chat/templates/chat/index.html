@@ -25,24 +25,27 @@
                 <div class="row mt-2">
                     <div class="col-2">
                         <div class="row">
+                            <img class="avatar" style="margin: auto" src="/media/{{item.author.userprofile.avatar}}" alt="">
+                        </div>
+
+                        <div class="row mt-1">
                             <img class="avatar mx-auto my-auto" src={% static "avatar.png" %} alt="">
                         </div>
-                        <!-- WARNING: тут должны быть лайки -->
-                        <div class="row mt-3">
-                            <div class="center-text" style="margin-left: auto;
-                            margin-right: auto; padding: 0em 1.8em;">
+
+                        <div class="row mt-1">
+                            <div class="center-text" style="margin: auto" id="rating{{item.id}}">
                                 {{item.rating_num}}
                             </div>
                         </div>
 
-                        <div class="row mt-3">
+                        <div class="row mt-1">
                             <div class="btn-group mx-auto my-auto">
                                 {% if user.is_authenticated %}
-                                <button type="button" class="btn btn-secondary likes-button" data-ans="{{ item.id }}">
-                                    <strong id="like_count">+</strong>
+                                <button type="button" class="btn btn-secondary likes-button" answer="like" data-ans="{{ item.id }}">
+                                    <strong>+</strong>
                                 </button>
-                                <button type="button" class="btn btn-secondary dismiss-button" data-ans="{{ item.id }}">
-                                    <strong id="dismiss_count">-</strong>
+                                <button type="button" class="btn btn-secondary likes-button" answer="dislike" data-ans="{{ item.id }}">
+                                    <strong>-</strong>
                                 </button>
                                 {% endif %}
                             </div>
@@ -51,7 +54,7 @@
 
                     <div class="col">
                         <div class="row">
-                            <a href="#" class="h4">{{item.title}}</a>
+                            <a href="{% url 'questions' item.id %}" class="h4">{{item.title}}</a>
                         </div>
 
                         <div class="row">
@@ -61,15 +64,15 @@
                         </div>
 
                         <div class="row">
-                            <div class="col">
-                                <a href ="#">Answers: {{item.answer}}</a>
+                            <div class="col mt-3">
+                                <a href ="{% url 'questions' item.id %}">Answers: ({{item.answer}})</a>
                             </div>
-                            <div class="col">
+                            <div class="col mt-3">
                                 <span>Tags:</span>
-                                {% for tag in tags%}
-                                    <a href="{% url 'tags'%}">{{item.tags}}</a>
+                                {% for tag in item.tags.all%}
+                                    <a href="{% url 'tag' tag %}" class="question-tag">{{tag}}</a>
                                 {% empty %}
-                                    <p>Smth</p>
+                                    <p>None</p>
                                 {% endfor %}
                             </div>
                         </div>
@@ -80,7 +83,7 @@
     {% endfor %}
 
     <div>
-        <ul class="pagination align-content-center">
+        <ul class="pagination my-4 align-content-center">
             <li class="page-item">
                 <a class="page-link" href="{{ paginator.baseurl }}1"> << </a>
             </li>

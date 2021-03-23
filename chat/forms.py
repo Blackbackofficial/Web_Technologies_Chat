@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import UserProfile, Question
+from .models import UserProfile, Question, Answer
 
 
 class LoginForm(forms.ModelForm):
@@ -37,3 +37,11 @@ class AskForm(forms.Form):
     class Meta:
         model = Question
         fields = ('title', 'tags')
+
+
+class AnswerForm(forms.Form):
+    text = forms.CharField(label='Текст вопроса', widget=forms.Textarea(attrs={'rows': 5, 'class': 'form-control'}))
+
+    class Meta:
+        model = Answer
+        fields = 'text'
