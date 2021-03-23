@@ -14,7 +14,7 @@
 
         {% if new %}
         <div class="col-md-3 my-1">
-            <a type="button" class="btn btn-outline-secondary" href="{% url 'new' %}">{{ new }}</a>
+            <a type="button" class="btn btn-outline-secondary" href="{% url 'index' %}">{{ new }}</a>
         </div>
         {% endif %}
     </div>
@@ -41,7 +41,7 @@
                         <div class="row mt-1">
                             <div class="btn-group mx-auto my-auto">
                                 {% if user.is_authenticated %}
-                                <button type="button" class="btn btn-secondary likes-button" answer="like" data-ans="{{ item.id }}">
+                                <button type="button" class = "btn btn-secondary likes-button" answer="like" data-ans="{{ item.id }}">
                                     <strong>+</strong>
                                 </button>
                                 <button type="button" class="btn btn-secondary likes-button" answer="dislike" data-ans="{{ item.id }}">
