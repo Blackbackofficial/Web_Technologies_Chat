@@ -30,9 +30,12 @@ class UserRegistrationForm(forms.Form):
 
 
 class AskForm(forms.Form):
-    title = forms.CharField(label='Титул', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    text = forms.CharField(label='Текст', widget=forms.Textarea(attrs={'class': 'form-control'}))
-    tags = forms.CharField(label='Теги', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    title = forms.CharField(label='Титул', widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Суть вопроса'}))
+    text = forms.CharField(label='Текст', widget=forms.Textarea(
+        attrs={'class': 'form-control', 'placeholder': 'Подробнее о вопросе'}))
+    tags = forms.CharField(label='Теги', widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Указывайте через запятую'}))
 
     class Meta:
         model = Question
