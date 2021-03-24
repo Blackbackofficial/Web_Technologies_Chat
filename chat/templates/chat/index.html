@@ -20,7 +20,7 @@
     </div>
 
     {% for item in posts %}
-        <div class="row question mt-3 mr-3">
+        <div class="row question mt-4 mr-3 font">
             <div class="container">
                 <div class="row mt-2">
                     <div class="col-2">
@@ -67,7 +67,7 @@
                             <div class="col mt-3">
                                 <a href ="{% url 'questions' item.id %}">Answers: ({{item.answer}})</a>
                             </div>
-                            <div class="col mt-3">
+                            <div class="col mt-3 my-3">
                                 <span>Tags:</span>
                                 {% for tag in item.tags.all%}
                                     <a href="{% url 'tag' tag %}" class="question-tag">{{tag}}</a>

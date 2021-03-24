@@ -43,7 +43,8 @@ class AskForm(forms.Form):
 
 
 class AnswerForm(forms.Form):
-    text = forms.CharField(label='Текст вопроса', widget=forms.Textarea(attrs={'rows': 5, 'class': 'form-control'}))
+    text = forms.CharField(label='Ваш ответ:', widget=forms.Textarea(
+        attrs={'rows': 5, 'class': 'form-control', 'placeholder': 'Введите свой ответ'}))
 
     class Meta:
         model = Answer

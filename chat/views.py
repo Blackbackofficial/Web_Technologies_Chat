@@ -65,16 +65,11 @@ def index(request, mod=0):
         title = 'Популярные'
         hot = None
         new = 'Новые'
-    elif mod == 2:
-        page = paginate(request, Question.objects.new(), 'new')
+    else:
+        page = paginate(request, Question.objects.new(), '')
         title = 'Новые'
         hot = 'Популярные'
         new = None
-    else:
-        page = paginate(request, Question.objects.all(), '')
-        title = 'Все вопросы'
-        hot = 'Популярные'
-        new = 'Новые'
     title_page = title + ':'
     return render(request, 'chat/index.html', {
         'avatar': avatar(request),
@@ -87,29 +82,27 @@ def questions_hot(request):
     return index(request, 1)
 
 
-def questions_new(request):
-    return index(request, 2)
-
-
 def login(request):
     return render(request, 'chat/login.html')
 
 
 def signup(request):
-    return render(request, 'chat/registration.html')
+    return render(request, 'chat/signup.html')
 
 
 def question(request, quest_num=1):
-    scroll = None
+    error = []
     if quest_num is None:
         raise Http404("No questions provided")
     if request.method == "POST":
         text = request.POST.get('text')
-        quest = Question.objects.get(id=quest_num)
-        quest.answer = quest.answer + 1
-        quest.save()
-        Answer.objects.create(content=text, question=quest, author=request.user)
-        scroll = True
+        if len(text) < 255:
+            quest = Question.objects.get(id=quest_num)
+            quest.answer = quest.answer + 1
+            quest.save()
+            Answer.objects.create(content=text, question=quest, author=request.user)
+        else:
+            error.append('Слишком длинный текст')
     q = Question.objects.get(id=quest_num)
     form = AnswerForm()
     page = paginate(request, q.answers.all())
@@ -117,20 +110,14 @@ def question(request, quest_num=1):
     if request.user.is_authenticated:
         user_name = request.user.first_name
     page.paginator.baseurl = '/question/' + str(quest_num) + '/?page='
-    if scroll is None:
-        return render(request, 'chat/onequestion.html', {'posts': page.object_list,
-                                                         'paginator': page.paginator, 'page': page, 'id': quest_num,
-                                                         'question': q, 'form': form, 'user_name': user_name})
-    if scroll:
-        return render(request, 'chat/onequestion.html',
-                      {'posts': page.paginator.page(page.paginator.num_pages).object_list,
-                       'paginator': page.paginator, 'page': page.paginator.page(page.paginator.num_pages),
-                       'id': quest_num,
-                       'question': q, 'form': form, 'user_name': user_name})
+    return render(request, 'chat/question.html',
+                  {'posts': page.paginator.page(page.paginator.num_pages).object_list, 'avatar': avatar(request),
+                   'paginator': page.paginator, 'page': page.paginator.page(page.paginator.num_pages),
+                   'id': quest_num, 'question': q, 'form': form, 'user_name': user_name, 'errors': error})
 
 
 def questions_tag(request, tag):
-    if tag == None:
+    if tag is None:
         raise Http404("No tag provided")
 
     page = paginate(request, Question.objects.by_tag(tag))
@@ -138,16 +125,17 @@ def questions_tag(request, tag):
         raise Http404("No tag provided")
 
     page.paginator.baseurl = '/tag/' + tag + '/?page='
-    return render(request, "questions_tag.html", {'posts': page.object_list,
-                                                  'paginator': page.paginator, 'page': page, 'tag': tag})
+    return render(request, "chat/tag.html", {'posts': page.object_list,
+                                             'paginator': page.paginator, 'page': page, 'tag': tag})
+
 
 def make_login(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('/?continue=relog')
     if request.method == "POST":
-        login = request.POST.get('login')
+        login_user = request.POST.get('login')
         password = request.POST.get('password')
-        user = auth.authenticate(username=login, password=password)
+        user = auth.authenticate(username=login_user, password=password)
         if user is not None:
             auth.login(request, user)
             return HttpResponseRedirect('/?continue=login')
@@ -171,25 +159,12 @@ def registration(request):
         return HttpResponseRedirect('/?continue=relog')
     if request.method == "POST":
         data = get_data(request)
-        if not data['first_name'] or len(data['first_name']) == 0:
-            error_fields.append(data["first_name"])
-        if not data['last_name'] or len(data['last_name']) == 0:
-            error_fields.append("last_name")
-        if not data['username'] or len(data['username']) == 0:
-            error_fields.append("username")
-        if not data['email'] or len(data['email']) == 0:
-            error_fields.append("email")
-        if not data['password1'] or len(data['password1']) == 0:
-            error_fields.append("password")
-        if not data['password2'] or len(data['password2']) == 0:
-            error_fields.append("password2")
-
+        error_fields = validation(data)
         if data['password1'] != data['password2']:
             error_fields.append("Пароли не совпадают")
-
         if len(error_fields) > 0:
             form = UserRegistrationForm()
-            return render(request, 'chat/registration.html', {'form': form, 'errors': error_fields})
+            return render(request, 'chat/signup.html', {'form': form, 'errors': error_fields})
 
         try:
             validators.validate_email(data['email'])
@@ -215,46 +190,54 @@ def registration(request):
         else:
             error_fields.append("Неизвестная ошибка")
     form = UserRegistrationForm()
-    return render(request, 'chat/registration.html', {'form': form, 'errors': error_fields})
+    return render(request, 'chat/signup.html', {'form': form, 'errors': error_fields})
 
 
 def ask_quest(request):
+    error = []
     if not request.user.is_authenticated:
         return JsonResponse({'status': 'error', 'message': 'Ошибка доступа'})
     if request.method == "POST":
         title = request.POST.get("title")
+        if len(title) > 30:
+            error.append('Слишком длинный титутл вопроса')
         text = request.POST.get("text")
+        if len(text) > 255:
+            error.append('Слишком длинное тело вопроса')
         tags = request.POST.get("tags")
-        qst = Question.objects.create(title=title, text=text, author=request.user)
-        tags = tags.split(",")
-        for tag in tags:
-            tag = (str(tag)).replace(' ', '')
-            Tag.objects.add_qst(tag, qst)
-        qst.save()
-        return HttpResponseRedirect('/?page=1000000000')
+        if len(tags) >= 20:
+            error.append('Слишком длинный тег')
+        if len(error) == 0:
+            quest = Question.objects.create(title=title, text=text, author=request.user)
+            tags = tags.split(",")
+            for tag in tags:
+                tag = (str(tag)).replace(' ', '')
+                Tag.objects.add_qst(tag, quest)
+            quest.save()
+            return HttpResponseRedirect('/question/{}/'.format(quest.id))
     form = AskForm()
-    return render(request, 'chat/newquestion.html', {'form': form, 'avatar': avatar(request)})
+    return render(request, 'chat/ask.html', {'form': form, 'avatar': avatar(request), 'errors': error})
 
 
 def settings(request):
+    success = error = []
+    flag = False
     if request.user.is_authenticated:
         if request.method == "POST":
             data = get_data(request)
-            if data['password1'] != data['password2']:
-                return JsonResponse({'status': 'error',
-                                     'message': 'Отсутсвует обязательный параметр',
-                                     'fields': ['password', 'password2']})
+            error = validation(data)
+            flag = True
             request.user.username = data['username']
             request.user.set_password(data['password1'])
             request.user.email = data['email']
             request.user.first_name = data['first_name']
             request.user.last_name = data['last_name']
-            # request.user.avatar = data['avatar'] надо доделать
+            request.user.userprofile.avatar = data['avatar']
             request.user.save()
+            request.user.userprofile.save()
             user = auth.authenticate(username=data['username'], password=data['password1'])
             if user is not None:
                 auth.login(request, user)
-            return HttpResponseRedirect('/?continue=saveset')
         # auto filed
         user_data = User.objects.get(id=request.user.id)
         first_name = user_data.first_name
@@ -263,7 +246,12 @@ def settings(request):
         email = user_data.email
         form = UserRegistrationForm({'first_name': first_name, 'last_name': last_name, 'username': username,
                                      'email': email})
-        return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request)})
+        if len(error) == 0 and flag:
+            success.append('Сохранено')
+        else:
+            success = None
+        return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request),
+                                                      'errors': error, 'success': success})
     return HttpResponseRedirect('/?continue=notlogin')
 
 
@@ -295,3 +283,22 @@ def check(request, ans_id):
         like = Likes(id_question=ans_id, id_user=request.user.id)
         like.save()
         return True
+
+
+def validation(data):
+    error_fields = []
+    if not data['first_name'] or len(data['first_name']) == 0:
+        error_fields.append(data["first_name"])
+    if not data['last_name'] or len(data['last_name']) == 0:
+        error_fields.append("last_name")
+    if not data['username'] or len(data['username']) == 0:
+        error_fields.append("username")
+    if not data['email'] or len(data['email']) == 0:
+        error_fields.append("email")
+    if not data['password1'] or len(data['password1']) == 0:
+        error_fields.append("password")
+    if not data['password2'] or len(data['password2']) == 0:
+        error_fields.append("password2")
+    if data['password1'] != data['password2']:
+        error_fields.append("Пароли не совпадают")
+    return error_fields
