@@ -4,7 +4,7 @@ from chat.managers import UserManager, QuestionManager, TagManager
 
 
 class UserProfile(models.Model):
-    avatar = models.ImageField(null=True, blank=True, verbose_name=u"аватар", upload_to='chat/static/images/')
+    avatar = models.ImageField(null=True, blank=True, verbose_name=u"аватар", upload_to='static/images/')
     register_date = models.DateField(null=False, blank=True, auto_now_add=True, verbose_name=u"дата регистрации")
     rating = models.IntegerField(blank=True, default=0, verbose_name=u"рейтинг")
     user = models.OneToOneField(User, related_name='userprofile', null=False, verbose_name="user",
@@ -34,6 +34,7 @@ class Question(models.Model):
     tags = models.ManyToManyField("Tag")
     rating_num = models.IntegerField(verbose_name='рейтинг', default=0)
     added_on = models.DateTimeField(verbose_name='дата и время добавления', auto_now_add=True)
+    answer = models.IntegerField(default=0, verbose_name='колличество ответов')
     objects = QuestionManager()
 
     def __str__(self):
@@ -54,3 +55,24 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'тег'
         verbose_name_plural = 'теги'
+
+
+class Answer(models.Model):
+    content = models.TextField(verbose_name='текст ответа')
+    author = models.ForeignKey(User, verbose_name='автор', on_delete=models.CASCADE)
+    is_correct = models.BooleanField(verbose_name='верный?', default=False)
+    rating_num = models.IntegerField(verbose_name='рейтинг', default=0)
+    added_on = models.DateTimeField(blank=True, auto_now_add=True, verbose_name='дата и время добавления')
+    question = models.ForeignKey(Question, related_name='answers', null=False, verbose_name="вопрос",
+                                 on_delete=models.DO_NOTHING)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.answer_text = None
+
+    def __str__(self):
+        return 'Comment №{number} by {user}'.format(number=self.pk, user='Username')
+
+    class Meta:
+        verbose_name = 'ответ'
+        verbose_name_plural = 'ответы'

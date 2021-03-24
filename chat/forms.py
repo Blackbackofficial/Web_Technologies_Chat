@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import UserProfile, Question
+from .models import UserProfile, Question, Answer
 
 
 class LoginForm(forms.ModelForm):
@@ -30,10 +30,22 @@ class UserRegistrationForm(forms.Form):
 
 
 class AskForm(forms.Form):
-    title = forms.CharField(label='Титул', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    text = forms.CharField(label='Текст', widget=forms.Textarea(attrs={'class': 'form-control'}))
-    tags = forms.CharField(label='Теги', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    title = forms.CharField(label='Титул', widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Суть вопроса'}))
+    text = forms.CharField(label='Текст', widget=forms.Textarea(
+        attrs={'class': 'form-control', 'placeholder': 'Подробнее о вопросе'}))
+    tags = forms.CharField(label='Теги', widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Указывайте через запятую'}))
 
     class Meta:
         model = Question
         fields = ('title', 'tags')
+
+
+class AnswerForm(forms.Form):
+    text = forms.CharField(label='Ваш ответ:', widget=forms.Textarea(
+        attrs={'rows': 5, 'class': 'form-control', 'placeholder': 'Введите свой ответ'}))
+
+    class Meta:
+        model = Answer
+        fields = 'text'

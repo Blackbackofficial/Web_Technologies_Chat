@@ -9,7 +9,7 @@
     <table class="table">
         <thead>
         <tr>
-            <th style="width: 200px; border-color: white;" colspan="3">
+            <th style="border-color: white;" colspan="3">
                 <h3 style="text-align: center">Настройки</h3>
             </th>
         </tr>
@@ -18,7 +18,13 @@
         <tr>
             <td>
                 <div style="margin: 10px;">
-                    <form class="form-horizontal" method="post">
+                    {% for error in errors %}
+                        <div class="alert alert-danger"> {{ error }} </div>
+                    {% endfor %}
+                    {% for done in success %}
+                        <div class="alert alert-success"> {{ done }} </div>
+                    {% endfor %}
+                    <form class="form-horizontal" enctype="multipart/form-data" method="post">
                         {% csrf_token %}
                         <fieldset>
                             {% for field in form %}
