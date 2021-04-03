@@ -11,7 +11,7 @@ class UserProfile(models.Model):
                                 on_delete=models.DO_NOTHING)
     objects = UserManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.user.username
 
     class Meta:
