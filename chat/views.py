@@ -1,7 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
-from django.core import validators
-from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.db import IntegrityError
@@ -10,7 +8,6 @@ from .forms import LoginForm, UserRegistrationForm, AskForm, AnswerForm
 from django.contrib import auth
 from .models import UserProfile, Question, Tag, Likes, Answer
 from django.core.paginator import Paginator, EmptyPage
-import re
 
 
 def paginate(request, qs, url=None):
@@ -133,9 +130,7 @@ def make_login(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('/?continue=relog')
     if request.method == "POST":
-        login_user = request.POST.get('login')
-        password = request.POST.get('password')
-        user = auth.authenticate(username=login_user, password=password)
+        user = auth.authenticate(username=request.POST.get('login'), password=request.POST.get('password'))
         if user is not None:
             auth.login(request, user)
             return HttpResponseRedirect('/?continue=login')
@@ -143,8 +138,7 @@ def make_login(request):
     else:
         error = request.GET.get('error')
         form = LoginForm()
-    return render(request, 'chat/login.html',
-                  {'form': form, 'error': error})
+    return render(request, 'chat/login.html', {'form': form, 'error': error})
 
 
 def logout(request):
@@ -158,22 +152,13 @@ def registration(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('/?continue=relog')
     if request.method == "POST":
+        form = UserRegistrationForm(request.POST)
+        error_fields = form.validation()
         data = get_data(request)
-        error_fields = validation(data)
-        if data['password1'] != data['password2']:
-            error_fields.append("Пароли не совпадают")
         if len(error_fields) > 0:
             form = UserRegistrationForm()
             return render(request, 'chat/signup.html', {'form': form, 'errors': error_fields})
 
-        try:
-            validators.validate_email(data['email'])
-        except ValidationError:
-            error_fields.append("Неверный формат почты")
-
-        if not re.compile("^([A-Za-z0-9]+)+$").match(data['username']):
-            error_fields.append("Неверный формат логина")
-        user = None
         try:
             user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password1'])
             user.first_name = data['first_name']
@@ -184,11 +169,7 @@ def registration(request):
             add_avatar.save()
         except IntegrityError:
             error_fields.append("Нарушена уникальность вводимых данных")
-
-        if user is not None:
             return HttpResponseRedirect('/?continue=reg')
-        else:
-            error_fields.append("Неизвестная ошибка")
     form = UserRegistrationForm()
     return render(request, 'chat/signup.html', {'form': form, 'errors': error_fields})
 
@@ -198,18 +179,11 @@ def ask_quest(request):
     if not request.user.is_authenticated:
         return JsonResponse({'status': 'error', 'message': 'Ошибка доступа'})
     if request.method == "POST":
-        title = request.POST.get("title")
-        if len(title) > 30:
-            error.append('Слишком длинный титутл вопроса')
-        text = request.POST.get("text")
-        if len(text) > 255:
-            error.append('Слишком длинное тело вопроса')
-        tags = request.POST.get("tags")
-        if len(tags) >= 20:
-            error.append('Слишком длинный тег')
+        form = AskForm(request.POST)
+        error = form.validation()
         if len(error) == 0:
-            quest = Question.objects.create(title=title, text=text, author=request.user)
-            tags = tags.split(",")
+            quest = Question.objects.create(title=request.POST.get('title'), text=request.POST.get('text'), author=request.user)
+            tags = request.POST.get('tags').split(",")
             for tag in tags:
                 tag = (str(tag)).replace(' ', '')
                 Tag.objects.add_qst(tag, quest)
@@ -224,8 +198,9 @@ def settings(request):
     flag = False
     if request.user.is_authenticated:
         if request.method == "POST":
+            form = UserRegistrationForm(request.POST)
+            error = form.validation()
             data = get_data(request)
-            error = validation(data)
             flag = True
             request.user.username = data['username']
             request.user.set_password(data['password1'])
@@ -244,8 +219,7 @@ def settings(request):
         last_name = user_data.last_name
         username = user_data.username
         email = user_data.email
-        form = UserRegistrationForm({'first_name': first_name, 'last_name': last_name, 'username': username,
-                                     'email': email})
+        form = UserRegistrationForm({'first_name': first_name, 'last_name': last_name, 'username': username, 'email': email})
         if len(error) == 0 and flag:
             success.append('Сохранено')
         else:
@@ -283,22 +257,3 @@ def check(request, ans_id):
         like = Likes(id_question=ans_id, id_user=request.user.id)
         like.save()
         return True
-
-
-def validation(data):
-    error_fields = []
-    if not data['first_name'] or len(data['first_name']) == 0:
-        error_fields.append(data["first_name"])
-    if not data['last_name'] or len(data['last_name']) == 0:
-        error_fields.append("last_name")
-    if not data['username'] or len(data['username']) == 0:
-        error_fields.append("username")
-    if not data['email'] or len(data['email']) == 0:
-        error_fields.append("email")
-    if not data['password1'] or len(data['password1']) == 0:
-        error_fields.append("password")
-    if not data['password2'] or len(data['password2']) == 0:
-        error_fields.append("password2")
-    if data['password1'] != data['password2']:
-        error_fields.append("Пароли не совпадают")
-    return error_fields
