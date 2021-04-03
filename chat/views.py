@@ -92,14 +92,13 @@ def question(request, quest_num=1):
     if quest_num is None:
         raise Http404("No questions provided")
     if request.method == "POST":
-        text = request.POST.get('text')
-        if len(text) < 255:
+        form = AnswerForm(request.POST)
+        error = form.validation()
+        if len(error) == 0:
             quest = Question.objects.get(id=quest_num)
             quest.answer = quest.answer + 1
             quest.save()
-            Answer.objects.create(content=text, question=quest, author=request.user)
-        else:
-            error.append('Слишком длинный текст')
+            Answer.objects.create(content=request.POST.get('text'), question=quest, author=request.user)
     q = Question.objects.get(id=quest_num)
     form = AnswerForm()
     page = paginate(request, q.answers.all())
