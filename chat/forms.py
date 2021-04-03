@@ -1,17 +1,14 @@
-import re
-from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.core import validators
 from .models import UserProfile, Question, Answer
+from django import forms
+import re
 
 
 class LoginForm(forms.ModelForm):
     login = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-
-    def clean_login(self):
-        login = self
 
     class Meta:
         model = User
@@ -66,19 +63,13 @@ class AskForm(forms.Form):
         model = Question
         fields = ('title', 'tags')
 
-    def clean(self):
-        return self.cleaned_data
-
     def validation(self):
         error = []
-        title = self.data.get("title")
-        if len(title) > 30:
+        if len(self.data.get("title")) > 30:
             error.append('Слишком длинный титутл вопроса')
-        text = self.data.get("text")
-        if len(text) > 255:
+        if len(self.data.get("text")) > 255:
             error.append('Слишком длинное тело вопроса')
-        tags = self.data.get("tags")
-        if len(tags) >= 20:
+        if len(self.data.get("tags")) >= 20:
             error.append('Слишком длинный тег')
         return error
 
@@ -90,3 +81,9 @@ class AnswerForm(forms.Form):
     class Meta:
         model = Answer
         fields = 'text'
+
+    def validation(self):
+        error = []
+        if len(self.data.get("text")) > 255:
+            error.append('Слишком длинный текст')
+        return error
