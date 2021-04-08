@@ -28,7 +28,7 @@ class UserRegistrationForm(forms.Form):
         model = UserProfile
         fields = ('username', 'email', 'avatar')
 
-    def validation(self):
+    def validate(self):
         error_fields = []
         if not self.data.get('first_name') or len(self.data.get('first_name')) == 0:
             error_fields.append("Невалидное ФИО")
@@ -63,7 +63,7 @@ class AskForm(forms.Form):
         model = Question
         fields = ('title', 'tags')
 
-    def validation(self):
+    def validate(self):
         error = []
         if len(self.data.get("title")) > 30:
             error.append('Слишком длинный титутл вопроса')
@@ -82,8 +82,8 @@ class AnswerForm(forms.Form):
         model = Answer
         fields = 'text'
 
-    def validation(self):
+    def validate(self):
         error = []
         if len(self.data.get("text")) > 255:
-            error.append('Слишком длинный текст')
-        return error
+            raise forms.ValidationError("Fields are not filled")
+        return self.cleaned_data
