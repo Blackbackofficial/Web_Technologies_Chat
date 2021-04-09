@@ -157,7 +157,6 @@ def registration(request):
         if len(error_fields) > 0:
             form = UserRegistrationForm()
             return render(request, 'chat/signup.html', {'form': form, 'errors': error_fields})
-
         try:
             user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password1'])
             user.first_name = data['first_name']
