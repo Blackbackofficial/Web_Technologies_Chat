@@ -121,7 +121,7 @@ def questions_tag(request, tag):
         raise Http404("No tag provided")
 
     page.paginator.baseurl = '/tag/' + tag + '/?page='
-    return render(request, "chat/tag.html", {'posts': page.object_list,
+    return render(request, "chat/tag.html", {'posts': page.object_list, 'avatar': avatar(request),
                                              'paginator': page.paginator, 'page': page, 'tag': tag})
 
 
