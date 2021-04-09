@@ -93,7 +93,7 @@ def question(request, quest_num=1):
         raise Http404("No questions provided")
     if request.method == "POST":
         form = AnswerForm(request.POST)
-        error = form.validation()
+        error = form.validate()
         if len(error) == 0:
             quest = Question.objects.get(id=quest_num)
             quest.answer = quest.answer + 1
@@ -152,7 +152,7 @@ def registration(request):
         return HttpResponseRedirect('/?continue=relog')
     if request.method == "POST":
         form = UserRegistrationForm(request.POST)
-        error_fields = form.validation()
+        error_fields = form.validate()
         data = get_data(request)
         if len(error_fields) > 0:
             form = UserRegistrationForm()
@@ -179,7 +179,7 @@ def ask_quest(request):
         return JsonResponse({'status': 'error', 'message': 'Ошибка доступа'})
     if request.method == "POST":
         form = AskForm(request.POST)
-        error = form.validation()
+        error = form.validate()
         if len(error) == 0:
             quest = Question.objects.create(title=request.POST.get('title'), text=request.POST.get('text'), author=request.user)
             tags = request.POST.get('tags').split(",")
@@ -198,7 +198,7 @@ def settings(request):
     if request.user.is_authenticated:
         if request.method == "POST":
             form = UserRegistrationForm(request.POST)
-            error = form.validation()
+            error = form.validate()
             data = get_data(request)
             flag = True
             request.user.username = data['username']
