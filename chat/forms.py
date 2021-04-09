@@ -85,5 +85,5 @@ class AnswerForm(forms.Form):
     def validate(self):
         error = []
         if len(self.data.get("text")) > 255:
-            raise forms.ValidationError("Fields are not filled")
-        return self.cleaned_data
+            error.append('Слишком большой ответ')
+        return error
