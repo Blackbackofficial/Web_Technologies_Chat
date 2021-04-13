@@ -18,7 +18,7 @@ class QuestionManager(models.Manager):
         return self.order_by('-added_on')
 
     def by_tag(self, tag):
-        return self.filter(tags__name__iexact=tag).order_by('-added_on')
+        return self.filter(tags__name__iexact=tag).order_by('-rating_num')
 
 
 class TagManager(models.Manager):
