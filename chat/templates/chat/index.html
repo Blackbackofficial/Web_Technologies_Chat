@@ -41,12 +41,22 @@
                         <div class="row mt-1">
                             <div class="btn-group mx-auto my-auto">
                                 {% if user.is_authenticated %}
-                                <button type="button" class = "btn btn-secondary likes-button" answer="like" data-ans="{{ item.id }}"
-                                    {% for likes in like %}{% if likes.id_question_id is item.id and likes.value > 0 %}disabled{% endif %}{% endfor %}>
+                                <button type="button" answer="like" data-ans="{{ item.id }}"
+                                    {% for likes in like %}
+                                        {% if likes.id_question_id is item.id and likes.value > 0 %} disabled
+                                            {% if likes.value == 1 %}class="btn btn-success likes-button"{% endif %}
+                                            {% if likes.value == 2 %} class="btn btn-danger likes-button"{% endif %}
+                                        {% endif %}
+                                    {% endfor %} class = "btn btn-secondary likes-button">
                                     <strong>+</strong>
                                 </button>
-                                <button type="button" class="btn btn-secondary likes-button" answer="dislike" data-ans="{{ item.id }}"
-                                    {% for likes in like %}{% if likes.id_question_id is item.id and likes.value > 0 %}disabled{% endif %}{% endfor %}>
+                                <button type="button" answer="dislike" data-ans="{{ item.id }}"
+                                    {% for likes in like %}
+                                        {% if likes.id_question_id is item.id and likes.value > 0 %} disabled
+                                            {% if likes.value == 1 %} class="btn btn-success likes-button"{% endif %}
+                                            {% if likes.value == 2 %} class="btn btn-danger likes-button"{% endif %}
+                                        {% endif %}
+                                    {% endfor %} class = "btn btn-secondary likes-button">
                                     <strong>-</strong>
                                 </button>
                                 {% endif %}
