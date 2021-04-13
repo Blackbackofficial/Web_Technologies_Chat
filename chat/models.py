@@ -19,14 +19,6 @@ class UserProfile(models.Model):
         verbose_name_plural = u'пользователи'
 
 
-class Likes(models.Model):
-    id_question = models.IntegerField(verbose_name='id', default=0)
-    id_user = models.IntegerField(verbose_name='id лайкнувшего', default=0)
-
-    def __str__(self):
-        return self.id_question
-
-
 class Question(models.Model):
     title = models.CharField(max_length=30, verbose_name="заголовок")
     text = models.TextField(max_length=255, verbose_name="текст")
@@ -43,6 +35,15 @@ class Question(models.Model):
     class Meta:
         verbose_name = 'вопрос'
         verbose_name_plural = 'вопросы'
+
+
+class Likes(models.Model):
+    id_question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    id_user = models.ForeignKey(User, null=False, verbose_name='id', on_delete=models.CASCADE)
+    value = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.id_question
 
 
 class Tag(models.Model):
@@ -65,10 +66,6 @@ class Answer(models.Model):
     added_on = models.DateTimeField(blank=True, auto_now_add=True, verbose_name='дата и время добавления')
     question = models.ForeignKey(Question, related_name='answers', null=False, verbose_name="вопрос",
                                  on_delete=models.DO_NOTHING)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.answer_text = None
 
     def __str__(self):
         return 'Comment №{number} by {user}'.format(number=self.pk, user='Username')
