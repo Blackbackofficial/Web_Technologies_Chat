@@ -44,14 +44,7 @@ def add_like(request):
         ans_id = request.POST['answer_id']
         questions = Question.objects.get(pk=ans_id)
         like_dis = request.POST['answer']
-        if check(request, ans_id, questions):
-            if like_dis == 'like':
-                questions.rating_num = questions.rating_num + 1
-                questions.save()
-            else:
-                if questions.rating_num > 0:
-                    questions.rating_num = questions.rating_num - 1
-                    questions.save()
+        if check(request, like_dis, questions):
             return JsonResponse({'rating': questions.rating_num})
         return JsonResponse({'rating': "Answered"})
 
@@ -68,8 +61,10 @@ def index(request, mod=0):
         hot = 'Популярные'
         new = None
     title_page = title + ':'
+    like = Likes.objects.all().filter(id_user=request.user.id)
+    # for page.object_list range
     return render(request, 'chat/index.html', {
-        'avatar': avatar(request),
+        'avatar': avatar(request), 'like': like,
         'title': title, 'title_page': title_page, 'hot': hot, 'new': new,
         'page': page, 'posts': page.object_list, 'paginator': page.paginator
     })
@@ -247,11 +242,20 @@ def get_data(request):
     return data
 
 
-def check(request, ans_id, questions):
+def check(request, like_dis, questions):
     try:
         Likes.objects.get(id_question=questions, id_user=request.user)
         return False
     except ObjectDoesNotExist:
-        like = Likes(id_question=questions, id_user=request.user)
+        s_like = 2
+        if like_dis == 'like':
+            questions.rating_num = questions.rating_num + 1
+            s_like = 1
+            questions.save()
+        else:
+            if questions.rating_num > 0:
+                questions.rating_num = questions.rating_num - 1
+                questions.save()
+        like = Likes(id_question=questions, id_user=request.user, value=s_like)
         like.save()
         return True
