@@ -42,9 +42,9 @@ def paginate(request, qs, url=None):
 def add_like(request):
     if request.method == 'POST':
         ans_id = request.POST['answer_id']
+        questions = Question.objects.get(pk=ans_id)
         like_dis = request.POST['answer']
-        if check(request, ans_id):
-            questions = Question.objects.get(pk=ans_id)
+        if check(request, ans_id, questions):
             if like_dis == 'like':
                 questions.rating_num = questions.rating_num + 1
                 questions.save()
@@ -247,11 +247,11 @@ def get_data(request):
     return data
 
 
-def check(request, ans_id):
+def check(request, ans_id, questions):
     try:
-        Likes.objects.get(id_question=ans_id, id_user=request.user.id)
+        Likes.objects.get(id_question=questions, id_user=request.user)
         return False
     except ObjectDoesNotExist:
-        like = Likes(id_question=ans_id, id_user=request.user.id)
+        like = Likes(id_question=questions, id_user=request.user)
         like.save()
         return True
