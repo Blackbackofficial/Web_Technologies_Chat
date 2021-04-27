@@ -38,6 +38,7 @@ class Question(models.Model):
 
 
 class Likes(models.Model):
+    #  уникальное поле
     id_question = models.ForeignKey(Question, on_delete=models.CASCADE)
     id_user = models.ForeignKey(User, null=False, verbose_name='id', on_delete=models.CASCADE)
     value = models.IntegerField(default=0)

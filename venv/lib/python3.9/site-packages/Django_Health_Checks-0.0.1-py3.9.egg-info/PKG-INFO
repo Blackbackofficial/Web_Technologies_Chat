@@ -1,0 +1,72 @@
+Metadata-Version: 1.1
+Name: Django-Health-Checks
+Version: 0.0.1
+Summary: Adds some common health check endpoints (ping, time, status)
+Home-page: http://github.com/juztin/django-health-checks
+Author: Justin Wilson
+Author-email: justin@minty.io
+License: BSD
+Description: Django-Health-Checks
+        ================
+        
+        `Django-Health-Checks`_ is Django plugin which adds a few
+        health check endpoints (ping, time, and status) to the Django project.
+        
+        Add *health_checks* to your settings.py *INSTALLED_APPS*
+        
+        ::
+        
+            INSTALLED_APPS += ('health_checks',)
+        
+        Add *health_checks* urls
+        
+        ::
+        
+            import health_checks
+        
+            urlpatterns += [
+                url('r^', include('health_checks.urls')),
+            ]
+        
+        ::
+        
+            from health_checks import status_job
+        
+            @status_job(name="PostgreSQL", timeout=5)
+            def postgresql():
+                # Perform a ping/query to Postgres
+        
+            @status_job
+            def facebook
+                # Ping some Facebook service.
+        
+        
+        get Django-Health-Checks
+        ====================
+        
+        Install `django`_
+        
+            sudo easy_install Django-Health-Checks
+            or
+            sudo pip install Django-Health-Checks
+        
+        Download the latest release from `Python Package Index`_
+        or clone `the repository`_
+        
+        .. _Python Package Index: https://pypi.python.org/pypi/Django-Health-Checks
+        .. _Django-Health-Checks: http://packages.python.org/Django-Health-Checks
+        .. _Django: http://flask.pocoo.org/
+        .. _the repository: https://github.com/juztin/django-health-checks
+        
+Platform: any
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

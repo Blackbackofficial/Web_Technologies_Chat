@@ -11,7 +11,6 @@ coreschema==0.0.4
 dict-dot-notate==0.0.3
 distlib==0.3.1
 dj-database-url==0.5.0
-Django==3.2
 django-cors-headers==3.5.0
 django-filter==2.4.0
 Django-Health-Checks==0.0.1

@@ -46,7 +46,7 @@ def add_like(request):
         like_dis = request.POST['answer']
         if check(request, like_dis, questions):
             return JsonResponse({'rating': questions.rating_num})
-        return JsonResponse({'rating': "Answered"})
+        return JsonResponse({'rating': questions.rating_num})
 
 
 def index(request, mod=0):
