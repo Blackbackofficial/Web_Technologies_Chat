@@ -1,4 +1,5 @@
 venvvenv
+venv
 .idea
 Chat_Django/__pycache__
 chat/__pycache__
