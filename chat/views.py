@@ -146,13 +146,17 @@ def registration(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             data = get_data(request)
-            user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password'])
-            user.first_name = data['first_name']
-            user.last_name = data['last_name']
-            user.save()
-            user_pk = User.objects.get(id=user.pk)
-            add_avatar = UserProfile(user=user_pk, avatar=data['avatar'])
-            add_avatar.save()
+            try:
+                user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password'])
+                user.first_name = data['first_name']
+                user.last_name = data['last_name']
+                user.save()
+                user_pk = User.objects.get(id=user.pk)
+                add_avatar = UserProfile(user=user_pk, avatar=data['avatar'])
+                add_avatar.save()
+            except IntegrityError:
+                alert = False
+                return render(request, 'chat/signup.html', {'form': form, 'alert': alert})
         alert = True
         return render(request, 'chat/signup.html', {'form': form, 'alert': alert})
     form = UserRegistrationForm()
