@@ -91,6 +91,12 @@ class AnswerForm(forms.Form):
         model = Answer
         fields = 'text'
 
+    def clean(self):
+        cleaned_data = super().clean()
+        if len(cleaned_data["text"]) > 255:
+            raise forms.ValidationError('Слишком длинный ответ')
+        return self.cleaned_data
+
     def validate(self):
         error = []
         if len(self.data.get("text")) > 255:

@@ -62,7 +62,6 @@ def index(request, mod=0):
         new = None
     title_page = title + ':'
     like = Likes.objects.all().filter(id_user=request.user.id)
-    # for page.object_list range
     return render(request, 'chat/index.html', {
         'avatar': avatar(request), 'like': like,
         'title': title, 'title_page': title_page, 'hot': hot, 'new': new,
@@ -83,19 +82,18 @@ def signup(request):
 
 
 def question(request, quest_num=1):
-    error = []
     if quest_num is None:
         raise Http404("No questions provided")
     if request.method == "POST":
         form = AnswerForm(request.POST)
-        error = form.validate()
-        if len(error) == 0:
+        if form.is_valid():
             quest = Question.objects.get(id=quest_num)
             quest.answer = quest.answer + 1
             quest.save()
             Answer.objects.create(content=request.POST.get('text'), question=quest, author=request.user)
+    else:
+        form = AnswerForm()
     q = Question.objects.get(id=quest_num)
-    form = AnswerForm()
     page = paginate(request, q.answers.all())
     user_name = None
     if request.user.is_authenticated:
@@ -104,7 +102,7 @@ def question(request, quest_num=1):
     return render(request, 'chat/question.html',
                   {'posts': page.paginator.page(page.paginator.num_pages).object_list, 'avatar': avatar(request),
                    'paginator': page.paginator, 'page': page.paginator.page(page.paginator.num_pages),
-                   'id': quest_num, 'question': q, 'form': form, 'user_name': user_name, 'errors': error})
+                   'id': quest_num, 'question': q, 'form': form, 'user_name': user_name})
 
 
 def questions_tag(request, tag):
@@ -167,7 +165,6 @@ def ask_quest(request):
     if request.method == "POST":
         form = AskForm(request.POST)
         if form.is_valid():
-            form.clean()
             quest = Question.objects.create(title=request.POST.get('title'), text=request.POST.get('text'), author=request.user)
             tags = request.POST.get('tags').split(",")
             for tag in tags:
@@ -198,7 +195,7 @@ def settings(request):
                 user = auth.authenticate(username=data['username'], password=data['password'])
                 if user is not None:
                     auth.login(request, user)
-                    alert = True
+            alert = True
             return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request), 'alert': alert})
         # auto filed
         user_data = User.objects.get(id=request.user.id)

@@ -115,9 +115,9 @@
 
         {% if user_name is not None %}
             <div>
-             {% for error in errors %}
-                        <div class="alert alert-danger"> {{ error }} </div>
-                    {% endfor %}
+                {% if form.errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors.as_text|slice:"2:" }}</div>
+                {% endif %}
                 <form method="post">
                     {% csrf_token %}
                     <fieldset>
