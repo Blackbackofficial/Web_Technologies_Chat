@@ -18,12 +18,11 @@
         <tr>
             <td>
                 <div style="margin: 10px;">
-                    {% for error in errors %}
-                        <div class="alert alert-danger"> {{ error }} </div>
-                    {% endfor %}
-                    {% for done in success %}
-                        <div class="alert alert-success"> {{ done }} </div>
-                    {% endfor %}
+                    {% if form.errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors.as_text|slice:"2:" }}</div>
+                    {% else %}
+                        <div class="alert alert-success"> Сохранено </div>
+                    {% endif %}
                     <form class="form-horizontal" enctype="multipart/form-data" method="post">
                         {% csrf_token %}
                         <fieldset>

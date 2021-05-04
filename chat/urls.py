@@ -1,6 +1,7 @@
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import path
+from django.conf.urls import handler404
 from Chat_Django.settings import MEDIA_URL, MEDIA_ROOT
 from .views import index, make_login, logout, registration, ask_quest, settings, questions_hot, add_like, question, \
     questions_tag

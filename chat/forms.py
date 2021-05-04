@@ -40,7 +40,7 @@ class UserRegistrationForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        if cleaned_data['password'] != cleaned_data['password2']:
+        if 'password' in cleaned_data and cleaned_data['password'] != cleaned_data['password2']:
             raise forms.ValidationError("Пароли не совпадают")
         if not cleaned_data['first_name'] or len(cleaned_data['first_name']) == 0:
             raise forms.ValidationError("Невалидное ФИО")
@@ -51,11 +51,11 @@ class UserRegistrationForm(forms.Form):
             raise forms.ValidationError("Невалидный логин")
         if not cleaned_data['email'] or len(cleaned_data['email']) == 0:
             raise forms.ValidationError("Невалидный email")
-        try:
-            User.objects.get(username=cleaned_data['username'])
-            raise forms.ValidationError("Нарушена уникальность вводимых данных")
-        except ObjectDoesNotExist:
-            pass
+        # try:
+        #     User.objects.get(username=cleaned_data['username'])
+        #     raise forms.ValidationError("Нарушена уникальность вводимых данных")
+        # except ObjectDoesNotExist:
+        #     pass
         return self.cleaned_data
 
 
@@ -71,15 +71,15 @@ class AskForm(forms.Form):
         model = Question
         fields = ('title', 'tags')
 
-    def validate(self):
-        error = []
-        if len(self.data.get("title")) > 30:
-            error.append('Слишком длинный титутл вопроса')
-        if len(self.data.get("text")) > 255:
-            error.append('Слишком длинное тело вопроса')
-        if len(self.data.get("tags")) >= 20:
-            error.append('Слишком длинный тег')
-        return error
+    def clean(self):
+        cleaned_data = super().clean()
+        if len(cleaned_data["title"]) > 30:
+            raise forms.ValidationError('Слишком длинный титутл вопроса')
+        if len(cleaned_data["text"]) > 255:
+            raise forms.ValidationError('Слишком длинное тело вопроса')
+        if len(cleaned_data["tags"]) >= 20:
+            raise forms.ValidationError('Слишком длинный тег')
+        return self.cleaned_data
 
 
 class AnswerForm(forms.Form):

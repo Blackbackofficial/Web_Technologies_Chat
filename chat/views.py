@@ -166,8 +166,8 @@ def ask_quest(request):
         return JsonResponse({'status': 'error', 'message': 'Ошибка доступа'})
     if request.method == "POST":
         form = AskForm(request.POST)
-        error = form.validate()
-        if len(error) == 0:
+        if form.is_valid():
+            form.clean()
             quest = Question.objects.create(title=request.POST.get('title'), text=request.POST.get('text'), author=request.user)
             tags = request.POST.get('tags').split(",")
             for tag in tags:
@@ -175,30 +175,30 @@ def ask_quest(request):
                 Tag.objects.add_qst(tag, quest)
             quest.save()
             return HttpResponseRedirect('/question/{}/'.format(quest.id))
+        return render(request, 'chat/ask.html', {'form': form, 'avatar': avatar(request)})
     form = AskForm()
-    return render(request, 'chat/ask.html', {'form': form, 'avatar': avatar(request), 'errors': error})
+    return render(request, 'chat/ask.html', {'form': form, 'avatar': avatar(request)})
 
 
 def settings(request):
-    success = error = []
-    flag = False
     if request.user.is_authenticated:
+        form = UserRegistrationForm(request.POST)
         if request.method == "POST":
-            form = UserRegistrationForm(request.POST)
-            error = form.validate()
-            data = get_data(request)
-            flag = True
-            request.user.username = data['username']
-            request.user.set_password(data['password1'])
-            request.user.email = data['email']
-            request.user.first_name = data['first_name']
-            request.user.last_name = data['last_name']
-            request.user.userprofile.avatar = data['avatar']
-            request.user.save()
-            request.user.userprofile.save()
-            user = auth.authenticate(username=data['username'], password=data['password1'])
-            if user is not None:
-                auth.login(request, user)
+            # form = UserRegistrationForm(request.POST)
+            if form.is_valid():
+                data = form.clean()
+                request.user.username = data['username']
+                request.user.set_password(data['password'])
+                request.user.email = data['email']
+                request.user.first_name = data['first_name']
+                request.user.last_name = data['last_name']
+                request.user.userprofile.avatar = data['avatar']
+                request.user.save()
+                request.user.userprofile.save()
+                user = auth.authenticate(username=data['username'], password=data['password'])
+                if user is not None:
+                    auth.login(request, user)
+            return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request)})
         # auto filed
         user_data = User.objects.get(id=request.user.id)
         first_name = user_data.first_name
@@ -206,12 +206,7 @@ def settings(request):
         username = user_data.username
         email = user_data.email
         form = UserRegistrationForm({'first_name': first_name, 'last_name': last_name, 'username': username, 'email': email})
-        if len(error) == 0 and flag:
-            success.append('Сохранено')
-        else:
-            success = None
-        return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request),
-                                                      'errors': error, 'success': success})
+        return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request)})
     return HttpResponseRedirect('/?continue=notlogin')
 
 
