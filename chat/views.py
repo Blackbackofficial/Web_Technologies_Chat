@@ -143,11 +143,11 @@ def logout(request):
 
 
 def registration(request):
+    alert = False
     if request.method == "POST":
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            form.clean()
-            data = form.cleaned_data
+            data = get_data(request)
             user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password'])
             user.first_name = data['first_name']
             user.last_name = data['last_name']
@@ -155,13 +155,13 @@ def registration(request):
             user_pk = User.objects.get(id=user.pk)
             add_avatar = UserProfile(user=user_pk, avatar=data['avatar'])
             add_avatar.save()
-        return render(request, 'chat/signup.html', {'form': form})
+        alert = True
+        return render(request, 'chat/signup.html', {'form': form, 'alert': alert})
     form = UserRegistrationForm()
-    return render(request, 'chat/signup.html', {'form': form})
+    return render(request, 'chat/signup.html', {'form': form, 'alert': alert})
 
 
 def ask_quest(request):
-    error = []
     if not request.user.is_authenticated:
         return JsonResponse({'status': 'error', 'message': 'Ошибка доступа'})
     if request.method == "POST":
@@ -182,11 +182,11 @@ def ask_quest(request):
 
 def settings(request):
     if request.user.is_authenticated:
-        form = UserRegistrationForm(request.POST)
+        alert = False
         if request.method == "POST":
-            # form = UserRegistrationForm(request.POST)
+            form = UserRegistrationForm(request.POST)
             if form.is_valid():
-                data = form.clean()
+                data = get_data(request)
                 request.user.username = data['username']
                 request.user.set_password(data['password'])
                 request.user.email = data['email']
@@ -198,15 +198,17 @@ def settings(request):
                 user = auth.authenticate(username=data['username'], password=data['password'])
                 if user is not None:
                     auth.login(request, user)
-            return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request)})
+                    alert = True
+            return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request), 'alert': alert})
         # auto filed
         user_data = User.objects.get(id=request.user.id)
         first_name = user_data.first_name
         last_name = user_data.last_name
         username = user_data.username
         email = user_data.email
-        form = UserRegistrationForm({'first_name': first_name, 'last_name': last_name, 'username': username, 'email': email})
-        return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request)})
+        form = UserRegistrationForm({'first_name': first_name, 'last_name': last_name, 'username': username,
+                                     'email': email})
+        return render(request, 'chat/settings.html', {'form': form, 'avatar': avatar(request), 'alert': alert})
     return HttpResponseRedirect('/?continue=notlogin')
 
 
@@ -227,7 +229,7 @@ def get_data(request):
     data['last_name'] = request.POST.get("last_name")
     data['username'] = request.POST.get("username")
     data['email'] = request.POST.get("email")
-    data['password1'] = request.POST.get("password")
+    data['password'] = request.POST.get("password")
     data['password2'] = request.POST.get("password2")
     data['avatar'] = request.FILES.get("avatar")
     return data

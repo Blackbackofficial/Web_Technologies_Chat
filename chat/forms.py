@@ -49,11 +49,12 @@ class UserRegistrationForm(forms.Form):
         if not cleaned_data['username'] or len(cleaned_data['username']) == 0 and not re.compile("^([A-Za-z0-9]+)+$")\
                 .match(cleaned_data['username']):
             raise forms.ValidationError("Невалидный логин")
-        if not cleaned_data['email'] or len(cleaned_data['email']) == 0:
+        if 'email' in cleaned_data and (not cleaned_data['email'] or len(cleaned_data['email']) == 0):
             raise forms.ValidationError("Невалидный email")
         # try:
-        #     User.objects.get(username=cleaned_data['username'])
-        #     raise forms.ValidationError("Нарушена уникальность вводимых данных")
+        #     if 'password2' in cleaned_data:
+        #         User.objects.get(username=cleaned_data['username'])
+        #         raise forms.ValidationError("Нарушена уникальность вводимых данных")
         # except ObjectDoesNotExist:
         #     pass
         return self.cleaned_data
