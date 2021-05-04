@@ -1,18 +1,28 @@
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.core import validators
 from .models import UserProfile, Question, Answer
 from django import forms
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 import re
 
 
-class LoginForm(forms.ModelForm):
-    login = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
+class LoginForm(forms.Form):
+    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        try:
+            User.objects.get(username=cleaned_data['username'])
+        except ObjectDoesNotExist:
+            raise forms.ValidationError("Не верный логин или пароль")
+        return self.cleaned_data
 
     class Meta:
         model = User
-        fields = ('login', 'password')
+        fields = ('username', 'password')
 
 
 class UserRegistrationForm(forms.Form):
@@ -22,33 +32,31 @@ class UserRegistrationForm(forms.Form):
     email = forms.EmailField(label="E-mail", widget=forms.EmailInput(attrs={'class': 'form-control'}))
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     password2 = forms.CharField(label='Повторите пароль', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-    avatar = forms.ImageField(label='Загрузите аватар')
+    avatar = forms.ImageField(label='Загрузите аватар', required=False)
 
     class Meta:
         model = UserProfile
-        fields = ('username', 'email', 'avatar')
+        fields = ('username', 'email', 'password', 'first_name', 'last_name')
 
-    def validate(self):
-        error_fields = []
-        if not self.data.get('first_name') or len(self.data.get('first_name')) == 0:
-            error_fields.append("Невалидное ФИО")
-        if not self.data.get('last_name') or len(self.data.get('last_name')) == 0:
-            error_fields.append("Невалидное ФИО")
-        if not self.data.get('username') or len(self.data.get('username')) == 0 and not re.compile("^([A-Za-z0-9]+)+$").match(self.data.get('username')):
-            error_fields.append("Невалидный логин")
-        if not self.data.get('email') or len(self.data.get('email')) == 0:
-            error_fields.append("Невалидный email")
-        if not self.data.get('password') or len(self.data.get('password')) == 0:
-            error_fields.append("Невалидный пароль")
-        if not self.data.get('password2') or len(self.data.get('password2')) == 0:
-            error_fields.append("Невалидный пароль")
-        if self.data.get('password') != self.data.get('password2'):
-            error_fields.append("Пароли не совпадают")
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data['password'] != cleaned_data['password2']:
+            raise forms.ValidationError("Пароли не совпадают")
+        if not cleaned_data['first_name'] or len(cleaned_data['first_name']) == 0:
+            raise forms.ValidationError("Невалидное ФИО")
+        if not cleaned_data['last_name'] or len(cleaned_data['last_name']) == 0:
+            raise forms.ValidationError("Невалидное ФИО")
+        if not cleaned_data['username'] or len(cleaned_data['username']) == 0 and not re.compile("^([A-Za-z0-9]+)+$")\
+                .match(cleaned_data['username']):
+            raise forms.ValidationError("Невалидный логин")
+        if not cleaned_data['email'] or len(cleaned_data['email']) == 0:
+            raise forms.ValidationError("Невалидный email")
         try:
-            validators.validate_email(self.data.get('email'))
-        except ValidationError:
-            error_fields.append("Неверный формат почты")
-        return error_fields
+            User.objects.get(username=cleaned_data['username'])
+            raise forms.ValidationError("Нарушена уникальность вводимых данных")
+        except ObjectDoesNotExist:
+            pass
+        return self.cleaned_data
 
 
 class AskForm(forms.Form):

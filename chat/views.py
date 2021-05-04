@@ -123,16 +123,17 @@ def questions_tag(request, tag):
 def make_login(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('/?continue=relog')
-    if request.method == "POST":
-        user = auth.authenticate(username=request.POST.get('login'), password=request.POST.get('password'))
-        if user is not None:
-            auth.login(request, user)
-            return HttpResponseRedirect('/?continue=login')
-        return HttpResponseRedirect('/login/?error=login')
-    else:
-        error = request.GET.get('error')
+    if request.method == "GET":
         form = LoginForm()
-    return render(request, 'chat/login.html', {'form': form, 'error': error})
+    if request.method == "POST":
+        form = LoginForm(data=request.POST)
+        if form.is_valid():
+            user = auth.authenticate(username=request.POST.get('username'), password=request.POST.get('password'))
+            if user is not None:
+                auth.login(request, user)
+                return HttpResponseRedirect('/?continue=login')
+        return render(request, 'chat/login.html', {'form': form})
+    return render(request, 'chat/login.html', {'form': form})
 
 
 def logout(request):
@@ -142,29 +143,21 @@ def logout(request):
 
 
 def registration(request):
-    error_fields = []
-    if request.user.is_authenticated:
-        return HttpResponseRedirect('/?continue=relog')
     if request.method == "POST":
         form = UserRegistrationForm(request.POST)
-        error_fields = form.validate()
-        data = get_data(request)
-        if len(error_fields) > 0:
-            form = UserRegistrationForm()
-            return render(request, 'chat/signup.html', {'form': form, 'errors': error_fields})
-        try:
-            user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password1'])
+        if form.is_valid():
+            form.clean()
+            data = form.cleaned_data
+            user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password'])
             user.first_name = data['first_name']
             user.last_name = data['last_name']
             user.save()
             user_pk = User.objects.get(id=user.pk)
             add_avatar = UserProfile(user=user_pk, avatar=data['avatar'])
             add_avatar.save()
-        except IntegrityError:
-            error_fields.append("Нарушена уникальность вводимых данных")
-            return HttpResponseRedirect('/?continue=reg')
+        return render(request, 'chat/signup.html', {'form': form})
     form = UserRegistrationForm()
-    return render(request, 'chat/signup.html', {'form': form, 'errors': error_fields})
+    return render(request, 'chat/signup.html', {'form': form})
 
 
 def ask_quest(request):
@@ -225,8 +218,11 @@ def settings(request):
 # static
 def avatar(request):
     ava = None
-    if request.user.is_authenticated:
-        ava = UserProfile.objects.get(user_id=request.user.id).avatar.url
+    try:
+        if request.user.is_authenticated:
+            ava = UserProfile.objects.get(user_id=request.user.id).avatar.url
+    except ValueError:
+        pass
     return ava
 
 
