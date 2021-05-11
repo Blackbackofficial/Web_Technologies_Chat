@@ -51,12 +51,6 @@ class UserRegistrationForm(forms.Form):
             raise forms.ValidationError("Невалидный логин")
         if 'email' in cleaned_data and (not cleaned_data['email'] or len(cleaned_data['email']) == 0):
             raise forms.ValidationError("Невалидный email")
-        # try:
-        #     if 'password2' in cleaned_data:
-        #         User.objects.get(username=cleaned_data['username'])
-        #         raise forms.ValidationError("Нарушена уникальность вводимых данных")
-        # except ObjectDoesNotExist:
-        #     pass
         return self.cleaned_data
 
 
@@ -97,8 +91,3 @@ class AnswerForm(forms.Form):
             raise forms.ValidationError('Слишком длинный ответ')
         return self.cleaned_data
 
-    def validate(self):
-        error = []
-        if len(self.data.get("text")) > 255:
-            error.append('Слишком большой ответ')
-        return error
