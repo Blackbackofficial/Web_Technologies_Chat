@@ -1,0 +1,35 @@
+upstream test {
+	server 127.0.0.1:8001 weight=1;
+	server 127.0.0.1:8002 weight=1;
+}
+proxy_cache_path /Library/Caches/nginx levels=1:2 keys_zone=all:32m max_size=1g;
+server {
+	listen 80;
+	location /{
+		proxy_pass http://127.0.0.1:81/;
+		proxy_cache all;
+		proxy_cache_valid any 1h;
+	}
+}
+
+server {
+	listen 81;
+	root /Users/ivanchernov/PycharmProjects/Chat_Django/ask_chernov;
+	server_name _;
+	gzip on;
+	gzip_types *;
+	location / {
+		proxy_pass http://test;
+	}
+	location ~ ^/uploads/ {
+		root  /Users/ivanchernov/PycharmProjects/Chat_Django/ask_chernov/;
+	}
+	# иначе если не было бы: ^~/static/ -> /static/static/
+	location ^~/static/ {
+		alias /Users/ivanchernov/PycharmProjects/Chat_Django/ask_chernov/static/;
+	}
+	location ~ \.\w*$ {
+		add_header Cache-Control "max-age=88000,  public";
+		root /Users/ivanchernov/PycharmProjects/Chat_Django/ask_chernov/static/;
+	}
+}
