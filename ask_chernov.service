@@ -1,0 +1,20 @@
+[Unit]
+Description = AskChernov
+After = network.target
+
+[Service]
+PermissionsStartOnly = true
+PIDFile = /run/ask_chernov/ask_chernov.pid
+User = www-data
+Group = www-data
+WorkingDirectory = /Users/ivanchernov/PycharmProjects/Chat_Django/ask_chernov
+ExecStartPre = /usr/bin/mkdir -p /run/ask_chernov
+ExecStartPre = /usr/bin/chown -R www-data:www-data /run/ask_chernov
+ExecStart = /usr/local/bin/gunicorn -c /Users/ivanchernov/PycharmProjects/Chat_Django/gunicorn.config.py --pid /run/ask_chernov/ask_chernov.pid ask_chernov.wsgi
+ExecReload = /usr/bin/kill -s HUP $MAINPID
+ExecStop = /usr/bin/kill -s TERM $MAINPID
+ExecStopPost = /usr/bin/rm -rf /run/ask_chernov
+PrivateTmp = true
+
+[Install]
+WantedBy = multi-user.target
