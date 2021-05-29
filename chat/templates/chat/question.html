@@ -90,11 +90,11 @@
                     </div>
                     <div class="col mx-2">
                         {{ comment.content }}
-                        {% if comment.is_correct == False %}
+                        {% if question.author_id == user.id%}
                             <form>
                                 <div class="form-check my-2">
-                                    <label class="form-check-label">
-                                        <input class="form-check-input" type="checkbox" value="">
+                                    <label class="form-check-label correct-button" correct-ans="{{ comment.id }}">
+                                        <input class="form-check-input" type="checkbox" {% if comment.is_correct %} checked {% endif %}>
                                         Correct!
                                     </label>
                                 </div>

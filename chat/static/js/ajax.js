@@ -9,3 +9,10 @@ $('.likes-button').click(function(){
         }
     });
 });
+
+
+$('.correct-button').click(function(){
+    let ans = $(this).attr("correct-ans");
+    let answer = $(this).attr("answer");
+    $.post('/is_correct/', {answer_id: ans, answer: answer});
+});
