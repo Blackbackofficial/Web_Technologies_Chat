@@ -1,0 +1,72 @@
+INSERT INTO public.auth_user(
+	id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined)
+SELECT
+    i,
+	md5(random()::text),
+	'2021-04-27 14:10:16.193409+03',
+	false,
+	random()::text,
+	random()::text,
+	random()::text,
+	random()::text ||'@gmail.com',
+	false,
+	true,
+	'2021-04-27 14:10:16.193409+03'
+ from generate_series(1, 10000) s(i)
+
+INSERT INTO public.chat_userprofile(
+	avatar, register_date, rating, user_id)
+SELECT
+NULL,
+'2021-04-27 14:10:16.193409+03',
+random(),
+i
+from generate_series(1, 10000) s(i)
+
+INSERT INTO public.chat_question(
+	id, title, text, rating_num, added_on, answer, author_id)
+SELECT
+i,
+random()::text,
+random()::text,
+random(),
+'2021-04-27 14:11:24.123456+03',
+1,
+i % 9999 + 1
+from generate_series(1, 100000) s(i);
+
+INSERT INTO public.chat_answer(
+	 id, content, is_correct, rating_num, added_on, author_id, question_id)
+SELECT
+i,
+random()::text,
+True,
+random(),
+'2021-04-27 14:11:24.123456+03',
+i % 9999 + 1,
+i % 99999 + 1
+from generate_series(1, 1000000) s(i);
+
+INSERT INTO public.chat_tag(
+	id, name)
+SELECT
+i,
+substring(random()::text from 0 for 20)
+from generate_series(1, 10000) s(i);
+
+INSERT INTO public.chat_question_tags(
+	id, question_id, tag_id)
+	SELECT
+	i,
+	i % 99999 + 1,
+	i % 9999 + 1
+	from generate_series(1, 1000000) s(i);
+
+INSERT INTO public.chat_likes(
+	id, value, id_question_id, id_user_id)
+	SELECT
+	i,
+	1,
+	i % 99999 + 1,
+	i % 9999 + 1
+	from generate_series(1, 1000000) s(i);
