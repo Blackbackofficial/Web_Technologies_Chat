@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.cache import cache
+from django.db.models import Count
 
 
 class UserManager(models.Manager):
@@ -13,6 +14,12 @@ class UserManager(models.Manager):
 class QuestionManager(models.Manager):
     def hot(self):
         return self.order_by('-rating_num')
+
+    def hot_tags(self):
+        return self.all().values('tags').annotate(total=Count('tags')).order_by('total').values('total', 'tags')
+
+    def hot_users(self):
+        return self.all().values('author_id').annotate(total=Count('author_id')).order_by('total').values('total', 'author_id')
 
     def new(self):
         return self.order_by('-added_on')
