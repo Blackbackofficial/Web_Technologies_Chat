@@ -1,244 +1,55 @@
+# Terms of reference for creating a chat
+As a task, it is proposed to complete the project "Questions and Answers". This service will allow Internet users to ask questions and receive answers to them. Commenting and voting capabilities build a community and allow users to actively help others. The recommended implementation is [Stack Overflow](https://stackoverflow.com).
 
-# Техническое задание по созданию чата
-В качестве домашнего задания предлагается выполнить проект «Вопросы и Ответы». Этот сервис позволит пользователям Интернета задавать вопросы и получать на них ответы. Возможности комментирования и голосования формируют сообщество и позволяет пользователям активно помогать другим. В качестве образца реализации рекомендуется использовать [Stack Overflow](https://stackoverflow.com).
+## Technologies used
+- Application code is written in **Python + Django**.
+- The application runs under the control of the **Gunicorn** server.
+- Database - **PostreSQL**.
+- **nginx** is used to return statics.
+- To deliver real-time messages **nginx + mod_push**.
+- For data caching - **memcached**.
+- Layout is done using **Twitter Bootstrap**.
+- Interface interaction with the user is provided by **JavaScript/jQuery**.
+- You can use the **django.contrib.auth** application to authorize and store users.
 
-## Используемые технологии
-- Код приложения пишется на **Python + Django**.
-- Приложение запускается под управлением сервера **Gunicorn**.
-- База данных – **PostreSQL**.
-- Для отдачи статики используется **nginx**.
-- Для доставки real-time сообщений **nginx + mod_push**.
-- Для кеширования данных – **memcached**.
-- Верстка выполняется с использованием **Twitter Bootstrap**.
-- Взаимодействие интерфейса с пользователем обеспечивается **JavaScript/jQuery**.
-- Для авторизации и хранения пользователей можно использовать приложение **django.contrib.auth**.
+## Main entities
+- User - email, nickname, password, avatar, date of registration, rating.
+- Question - title, content, author, creation date, tags, rating.
+- Answer - content, author, date of writing, flag of the correct answer, rating.
+- Tag - tag word.
 
-## Основные сущности
-- Пользователь – электронная почта, никнейм, пароль, аватарка, дата регистрации, рейтинг.
-- Вопрос – заголовок, содержание, автор, дата создания, теги, рейтинг.
-- Ответ – содержание, автор, дата написания, флаг правильного ответа, рейтинг.
-- Тег – слово тега.
+## Basic pages and forms
+1. **Listing questions** with pagination of 20 questions per page. It is necessary to implement sorting by date added and rating (2 types of sorting). The site header contains: a logo, a search bar (for quick search by the title and content of the question), a button to ask a question (only available to authorized users). On the right side of the header is a user block. For an authorized user, the user block contains his nickname, avatar, links to the “exit” and to the page with his profile. For unauthorized - links "login" and "registration". In the right column - information blocks "Popular tags" and "Top users" (description below). All listings have “like/dislike” buttons that allow you to change the rating of a question.
 
-## Основные страницы и формы
-1. **Листинг вопросов** с пагинацией по 20 вопросов на странице. Необходимо реализовать сортировку по дате добавления и рейтингу (2 вида сортировки). В шапке сайта находятся: логотип, поисковая строка (для быстрого поиска по заголовку и содержимому вопроса), кнопка задать вопрос (доступна только авторизованным). В правой части шапки - юзерблок. Для авторизованного пользователя юзерблок содержит его ник, аватарку, ссылки на “выход” и на страницу с его профилем. Для неавторизованных - ссылки “войти” и “регистрация”. В правой колонке - информационные блоки “Популярные тэги” и “Лучшие пользователи” (описание ниже). Во всех листингах присутствуют кнопки “лайк/дизлайк”, позволяющие менять рейтинг вопроса.
+2. **Page for adding a question** (can be done as an overlay). Available only to authorized users. The title, question text and tags are entered into the form, separated by commas. A question can have no more than 3 tags associated with it. For a hint when choosing a tag, you can use a ready-made jquery plugin. Ready-made django applications for tags are not allowed. When processing the form, it is necessary to check the validity of the data. If the question is successfully added, the user is redirected to the question page, if there are errors, they must be displayed in the form.
 
-2. **Страница добавления вопроса** (можно сделать оверлеем). Доступна только для авторизованных пользователей. В форма вводится заголовок, текст вопроса и теги, через запятую. С вопросом может быть связано не более 3 тегов. Для подсказки при выборе тега можно использовать готовый jquery плагин. Готовые django приложения для тегов использовать запрещается. При обработке формы обязательно проверка валидности данных. Если вопрос успешно добавлен - пользователя перебрасывает на страницу вопроса, если возникли ошибки - их нужно отобразить в форме.
+3. **Question page with a list of answers**. You can add an answer on the question page. Answers are sorted by rating and date of addition if the rating is equal. Answers are divided into 30 pieces per page. The form for adding an answer is on the question page. Displayed only for authorized users. After adding an answer, the questioner should receive an email notification of the new answer. This letter should contain a link to go to the question page. The author of the question can mark one of the answers as correct. Users can vote for questions and answers with likes "+" or "-". One user can vote for 1 question and answer only 1 time, but can cancel his choice or re-vote an unlimited number of times.
 
-3. **Страница вопроса со списком ответов**. На странице вопроса можно добавить ответ. Ответы сортируются по рейтингу и дате добавления при равном рейтинге. Ответы разбиваются по 30 штук на странице. Форма добавления ответа находится на странице вопроса. Отображается только для авторизованных пользователей. После добавления ответа, автор вопроса должен получить email с уведомление от новом ответе. В этом письме должна быть ссылка для перехода на страницу вопроса. Автор вопроса может пометить один из ответов как правильный. Пользователи могут голосовать за вопросы и ответы с помощью лайков «+» или «–». Один пользователь может голосовать за 1 вопрос и ответ только 1 раз, однако может отменить свой выбор или переголосовать неограниченное число раз.
+4. **Listing questions by tag**. This page displays all questions containing some tag. Sort by question rating. Pagination of 20 questions. Users get to this page by clicking on one of the tags in the question description.
 
-4. **Листинг вопросов по тегу**. На этой странице выводятся все вопросы содержащие некоторый тег. Сортировка по рейтингу вопроса. Пагинация по 20 вопросов. Пользователи попадают на эту страницу кликая по одному из тегов в описании вопроса.
+5. **User's page** contains his settings - email, nick and profile picture. Each user can only view their own page. The user should be able to change email, nick and profile picture.
 
-5. **Страница пользователя** содержит его настройки - email, nick и аватарку. Каждый пользователь может смотреть только свою страницу. У пользователя должна быть возможность изменить email, nick и аватарку.
 
+6. **Authorization form**. Consists of the username and password fields. Additionally, there is a link to the registration form. If authorization is successful, the user is redirected to the original page; if authorization is unsuccessful, form error messages are displayed in the form. For authorized users, instead of this form, the “Logout” button should be shown.
 
-6. **Форма авторизации**. Состоит из поля логин и пароль. Дополнительно есть ссылка на форму регистрации. При успешной авторизации пользователь перебрасывается на исходную страницу, при неуспешной авторизации в форме выводятся сообщения об ошибках формы. Для авторизованных пользователей вместо этой формы должна показываться кнопка “Выйти”.
+7. **Registration page**. Any user can register on the site by filling out the form with e-mail, nickname, avatar and password. The avatar is uploaded to the server and displayed next to the user's questions and answers. If the registration in the form fails, you should display error messages.
 
-7. **Страница регистрации**. Любой пользователь может зарегистрироваться на сайте, заполнив форму с электронной почтой, никнеймом, аватаркой и паролем. Аватарка загружается на сервер и отображается рядом с вопросами и ответами пользователя. При неудачной регистрации в форме необходимо выводить сообщения об ошибках.
+8. **Block of popular tags**. In the right column of the site is a cloud of the 20 most popular tags. The most popular tags are those that have been used in the most questions. The generation of this block takes a long time, so this block must be generated in the background using a cron script.
 
-8. **Блок популярных тегов**. В правой колонке сайте находится облако из 20 наиболее популярных тегов. Популярными считаются те теги, которые были использованы в наибольшем количестве вопросов. Генерация этого блока занимает много времени, поэтому этот блок необходимо генерировать в фоне, с помощью cron скрипта.
+9. **Block of top users** (weeks). The top users block includes 10 authors who have asked the most popular questions or answers over the past week. Those. questions and answers created in the last week are sorted by rating. We choose the top N, their authors will be the “best”.
 
-9. **Блок лучших пользователи** (недели). В блок лучшие пользователи попадают 10 авторов задавших самые популярные вопросы или ответы за последнюю неделю. Т.е. вопросы и ответы, созданные за последнюю неделю сортируем по рейтингу. Выбираем топ N, их авторы и будут “лучшими”. Генерация этого блока занимает много времени, поэтому блок нужно подготавливать в фоне, с помощью cron скрипта.
+## Project requirements
+1. The structure of the project should be clear to users. Pages are navigated through links. Form processing should be done with a redirect.
+2. The project code should be neat and without duplication. The presence of large repetitive code snippets or patterns may be the reason for the deduction of points.
+3. The layout of the project must be done using css framework Twitter Bootstrap.
+4. The application code should be sensitive to the input data and issue appropriate error codes and texts. Message to users "Question added",
+"The question was not added because" is displayed in the overlay. A server response with a 500 code may be the reason for the deduction.
+5. Page generation time should not depend on the amount of data in the database.
+6. Project pages should not be given more than 1 second.
 
-## Требования к проекту
-1. Структура проекта должна быть понятна пользователям. Переходы по страницам осуществляются по ссылкам. Обработка форм должна осуществляться с редиректом.
-2. Код проекта должен быть аккуратным и без дублирования. Наличие больших повторяющихся фрагментов кода или шаблонов могут быть причиной снижения баллов.
-3. Верстка проекта должна быть выполнена с помощью css фреймворка Twitter Bootstrap.
-4. Код приложения должен быть чувствителен к входным данным и выдавать соответствующие коды и тексты ошибок. Сообщение пользователям «Вопрос добавлен»,
-«Вопрос не был добавлен, потому что» выводятся в оверлее. Ответ сервера с кодом 500 может быть причиной снижения баллов.
-5. Время генерации страницы не должно зависеть от объема данных в базе.
-6. Страницы проекты не должны отдаваться более 1 секунды.
-
-## Требования к объему данных
-- Пользователи > 10 000.
-- Вопросы > 100 000.
-- Ответы > 1 000 000.
-- Тэги > 10 000.
-- Оценки пользователей > 2 000 000.
-
-## Дополнительные задания.
-1. Real-time нотификации, уведомление о новых ответах при просмотре вопроса (20 баллов). С использованием long-polling или web sockets.
-
-# Оценка и разбалловка
-## Пороговые баллы
-- 0-39 — неудовлетворительно.
-- 40-59 — удовлетворительно.
-- 60-79 — хорошо.
-- 80-100 — отлично.
-
-## ДЗ 1 “Статическая верстка” - 16 баллов
-Верстка общего вида (layout) страницы - 4:
-
-- общий вид: 2 колонки, header, footer - 1;
-- правая колонка - 1;
-- блок авторизованного юзера - 1;
-- поисковая строка и логотип - 1.
-
-Верстка листинга вопросов - 3:
-
-- общий вид (паддинги, аватарка) - 1;
-- кнопки лайков - 1;
-- теги, счетчики ответов, остальное - 1.
-
-Верстка страницы вопроса - 3:
-
-- общий вид - 1;
-- чекбокс “правильный ответ”, кнопки лайков - 1;
-- форма ответа - 1.
-
-Верстка формы добавления вопроса - 3:
-
-- общий вид - 2;
-- сообщения об ошибках - 1.
-
-Верстка форм логина и регистрации - 3:
-
-- общий вид - 2;
-- аватарка и сообщения об ошибках - 1.
-
-## ДЗ 2 “Обработка HTTP запросов” - 14 баллов
-Создать views и шаблоны для основных страниц - 6:
-
-- главная (список новых вопросов) - 1;
-- страница вопроса (список ответов) - 1;
-- страница добавления вопроса - 1;
-- форма регистрации - 1;
-- форма входа - 1;
-- форма добавления вопроса - 1.
-
-Создать urls.py для всех страниц - 4:
-
-- Собственно urls.py - 2;
-- Именованные маршруты (во всех шаблонах) - 2.
-
-Постраничное отображение - 4:
-
-- функция пагинации - 1;
-- шаблон для отрисовки пагинатора - 2;
-- корректная обработка “неправильных” параметров - 1.
-
-## ДЗ 3 “Работа с базой данных” - 14 баллов
-Проектирование модели - 5:
-
-- правильные адекватные типы данных и внешние ключи - 1;
-- своя модель пользователя - 1;
-- таблицы тегов, лайков - 1;
-- query-set'ы для типовых выборок: новые вопросы, популярные, по тегу - 2.
-
-Наполнение базы тестовыми данными - 3:
-
-- наполнение данными - 2;
-- использование django management commands - 1.
-
-Отображение списка вопросов - 3:
-
-- список новых вопросов - 1;
-- список популярных - 1;
-- список вопросов по тегу - 1.
-
-Отображение страницы вопроса - 3:
-
-- общее - 3.
-
-## ДЗ 4 “Авторизация и обработка форм” - 15 баллов
-Вход на сайт - 3:
-
-- общее - 1;
-- возврат на исходную страницу - 1;
-- отображение ошибок - 1.
-
-Регистрация на сайте - 3:
-
-- общее - 2;
-- отображение ошибок - 1.
-
-Выход с сайта - 1:
-
-- Отображение текущего пользователя в шапке - 1.
-
-Добавление вопроса - 4:
-
-- общее - 1;
-- добавление тегов - 1;
-- отображение ошибок - 1;
-- редирект на страницу вопроса - 1.
-
-Добавление ответа - 2:
-
-- общее - 1;
-- редирект на добавленный ответ - 1.
-
-Проверка метода запроса 1.
-
-## ДЗ 5 “Изображения и обработка AJAX запросов” - 11 баллов
-Загрузка и отображение аватарок пользователей - 4:
-
-- заливка картинок в uploads - 2;
-- отображение картинок из uploads - 2.
-
-Страница редактирования профиля - 2:
-
-- общее - 1;
-- отображение ошибок - 1.
-
-Лайки вопросов и ответов - 2:
-
-- общее - 1;
-- AJAX - 1.
-
-Отметка “правильный ответ” - 2:
-
-- общее - 1;
-- AJAX - 1.
-
-Проверка авторизации, csrf, метода запроса, авторства - 1.
-
-## ДЗ 6 “Настройка серверов” - 14 баллов
-Настройка nginx для отдачи статического контента - 5:
-
-- общее - 3;
-- локейшен /upload/ приоритетнее статики - 1;
-- проксирование - 1.
-
-Настройка gunicorn для запуска wsgi приложений - 2:
-
-- общее - 2.
-
-Создание hello-world WSGI приложения - 2:
-
-- собственно hello-world - 1;
-- отображение списка GET, POST и других параметров - 1.
-
-Создание django проекта - 2:
-
-- создание структуры проекта - 1;
-- создание hello-world view - 1.
-
-Оценка производительности nginx и gunicorn - 3:
-
-- статический документ через nginx и через gunicorn - 1;
-- динамический документ через gunicorn - 1;
-- динамический документ через nginx с проксирование на gunicorn, с кэшом и без кэша (proxy_cache) - 1;
-
-## ДЗ 7 “Дополнительные функции” - 20 баллов
-Real-time сообщения - 8:
-
-- настройка nginx+mod_push - 2;
-- подключение к mod_push c помощью jQuery - 3;
-- отправка сообщений в mod_push - 3.
-
-Блок популярные теги - 4:
-
-- правильный расчет тегов - 2;
-- предварительный расчет по cron - 2 (просто кеширование - 1).
-
-Блок лучшие пользователи - 4:
-
-- правильный расчет пользователей - 2;
-- предварительный расчет по cron - 2 (просто кеширование - 1).
-
-Поиск по заголовку и содержимому вопроса - 4:
-
-- корректная работа поиска - 1;
-- поисковые подсказки - 1;
-- отправка данных на сервер по мере ввода - 1;
-- ожидание ввода всех символов пользователем - 1.
+## Data volume requirements
+- Users > 10,000.
+- Questions > 100,000.
+- Answers > 1,000,000.
+- Tags > 10,000.
+- User ratings > 2,000,000.
